@@ -18,6 +18,9 @@ ROUTING=${11}
 BASTION=$(hostname -f)
 AADCLIENTID=${20}
 AADCLIENTSECRET="${21}"
+TENANTID=${22}
+SUBSCRIPTIONID=${23}
+RESOURCEGROUP=${24}
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
@@ -138,7 +141,6 @@ g_subscriptionId: $SUBSCRIPTIONID
 g_aadClientId: $AADCLIENTID
 g_aadClientSecret: $AADCLIENTSECRET
 g_resourceGroup: $RESOURCEGROUP
-g_location: $LOCATION
 EOF
 
 # Create Azure Cloud Provider configuration Playbook for Single Master Cluster
