@@ -21,6 +21,11 @@ AADCLIENTSECRET="${21}"
 TENANTID=${22}
 SUBSCRIPTIONID=${23}
 RESOURCEGROUP=${24}
+CLOUD=${25}
+LOCATION=${26}
+VNETNAME=${27}
+SECURITYGROUPNAME=${28}
+PRIMARYAVAILABILITYSETNAME=${29}
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
@@ -141,6 +146,11 @@ g_subscriptionId: $SUBSCRIPTIONID
 g_aadClientId: $AADCLIENTID
 g_aadClientSecret: $AADCLIENTSECRET
 g_resourceGroup: $RESOURCEGROUP
+g_cloud: $CLOUD
+g_location: $LOCATION
+g_vnetName: $VNETNAME
+g_securityGroupName: $SECURITYGROUPNAME
+g_primaryAvailabilitySetName: $PRIMARYAVAILABILITYSETNAME
 EOF
 
 # Create Azure Cloud Provider configuration Playbook for Single Master Cluster
@@ -178,8 +188,14 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
           "aadClientID" : "{{ g_aadClientId }}",
           "aadClientSecret" : "{{ g_aadClientSecret }}",
           "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
+          "tenantId" : "{{ g_tenantId }}",
+          "aadtenantId" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "cloud": "{{ g_cloud }}",
+          "location": "{{ g_location }}",
+          "vnetName": "{{ g_vnetName }}",
+          "securityGroupName": "{{ g_securityGroupName }}",
+          "primaryAvailabilitySetName": "{{ g_primaryAvailabilitySetName }}"
         } 
     notify:
     - restart atomic-openshift-master
@@ -231,8 +247,14 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
           "aadClientID" : "{{ g_aadClientId }}",
           "aadClientSecret" : "{{ g_aadClientSecret }}",
           "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
+          "tenantId" : "{{ g_tenantId }}",
+          "aadtenantId" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "cloud": "{{ g_cloud }}",
+          "location": "{{ g_location }}",
+          "vnetName": "{{ g_vnetName }}",
+          "securityGroupName": "{{ g_securityGroupName }}",
+          "primaryAvailabilitySetName": "{{ g_primaryAvailabilitySetName }}"        
         } 
     notify:
     - restart atomic-openshift-node
@@ -291,8 +313,14 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
           "aadClientID" : "{{ g_aadClientId }}",
           "aadClientSecret" : "{{ g_aadClientSecret }}",
           "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
+          "tenantId" : "{{ g_tenantId }}",
+          "aadtenantId" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "cloud": "{{ g_cloud }}",
+          "location": "{{ g_location }}",
+          "vnetName": "{{ g_vnetName }}",
+          "securityGroupName": "{{ g_securityGroupName }}",
+          "primaryAvailabilitySetName": "{{ g_primaryAvailabilitySetName }}"         
         } 
     notify:
     - restart atomic-openshift-master-api
@@ -346,8 +374,14 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
           "aadClientID" : "{{ g_aadClientId }}",
           "aadClientSecret" : "{{ g_aadClientSecret }}",
           "subscriptionID" : "{{ g_subscriptionId }}",
-          "tenantID" : "{{ g_tenantId }}",
+          "tenantId" : "{{ g_tenantId }}",
+          "aadtenantId" : "{{ g_tenantId }}",
           "resourceGroup": "{{ g_resourceGroup }}",
+          "cloud": "{{ g_cloud }}",
+          "location": "{{ g_location }}",
+          "vnetName": "{{ g_vnetName }}",
+          "securityGroupName": "{{ g_securityGroupName }}",
+          "primaryAvailabilitySetName": "{{ g_primaryAvailabilitySetName }}"
         } 
     notify:
     - restart atomic-openshift-node
