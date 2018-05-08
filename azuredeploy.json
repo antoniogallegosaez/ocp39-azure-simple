@@ -1533,6 +1533,36 @@
 							},
 							"secretName": "[parameters('keyVaultSecret')]"
 						}
+					},
+					"aadClientId": {
+						"value": "[parameters('aadClientId')]"
+					},
+					"aadClientSecret": {
+						"value": "[parameters('aadClientSecret')]"
+					},
+					"tenantId": {
+						"value": "[parameters('tenantId')]"
+					},
+					"subscriptionId": {
+						"value": "[parameters('subscriptionId')]"
+					},
+					"resourceGroup": {
+						"value": "[parameters('resourceGroup')]"
+					},
+					"cloud": {
+						"value": "[parameters('cloud')]"
+					},
+					"location": {
+						"value": "[parameters('location')]"
+					},
+					"vnetName": {
+						"value": "[parameters('vnetName')]"
+					},
+					"securityGroupName": {
+						"value": "[parameters('securityGroupName')]"
+					},
+					"primaryAvailabilitySetName": {
+						"value": "[parameters('primaryAvailabilitySetName')]"
 					}
 				}
 			}
