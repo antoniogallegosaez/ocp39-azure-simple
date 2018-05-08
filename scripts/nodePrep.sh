@@ -28,7 +28,7 @@ done
 # Register Host with Cloud Access Subscription
 echo $(date) " - Register host with Cloud Access Subscription"
 
-if [ "$ORGSUBS" = "true" ]
+if [ "${ORGSUBS}" = "true" ]; then
 	subscription-manager register --org="$USER" --activationkey="$PASSWORD" --force
 	if [ $? -eq 0 ]; then
 		echo "Subscribed successfully"
@@ -58,7 +58,7 @@ else
 	fi
 fi
 
-if [ "$AUTOPOOLED" = "true" ]
+if [ "${AUTOPOOLED}" = "true" ]; then
     echo "Subs autopooled. No need to attach pool id."
 else 
     subscription-manager attach --pool=$POOL_ID
