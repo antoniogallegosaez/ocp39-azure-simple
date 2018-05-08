@@ -8,7 +8,7 @@
 				"description": "Base URL for Template Files",
 				"artifactsBaseUrl": ""
 			},
-			"defaultValue": "https://raw.githubusercontent.com/mglantz/ocp39-azure-simple/master/"
+			"defaultValue": "https://raw.githubusercontent.com/antoniogallegosaez/ocp39-azure-simple/master/"
 		},
 		"masterVmSize": {
 			"type": "string",
@@ -135,6 +135,20 @@
 				"description": "Pool ID with OpenShift entitlements (To find it, run on registered server: subscription-manager list)"
 			}
 		},
+		"orgSubs": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "True if organization based subscription. In that case "
+			}
+		},		
+		"autoPooled": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "True if subscription contains pool"
+			}
+		},		
 		"sshPublicKey": {
 			"type": "securestring",
 			"metadata": {
@@ -178,6 +192,20 @@
 			"minLength": 1,
 			"metadata": {
 				"description": "Default Subdomain for application routing (Wildcard DNS) - must enter something even if you are using xip.io"
+			}
+		},
+		"aadClientId": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure AD Client ID"
+			}
+		},
+		"aadClientSecret": {
+			"type": "securestring",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure AD Client Secret"
 			}
 		}
 	},
@@ -1291,7 +1319,7 @@
 					]
 				},
 				"protectedSettings": {
-					"commandToExecute": "[concat('bash ', variables('bastionPrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'))]"
+					"commandToExecute": "[concat('bash ', variables('bastionPrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'), ' ', parameters('autoPooled'), ' ', parameters('orgSubs'))]"
 				}
 			}
 		}, {
@@ -1320,7 +1348,7 @@
 					]
 				},
 				"protectedSettings": {
-					"commandToExecute": "[concat('bash ', variables('masterPrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'))]"
+					"commandToExecute": "[concat('bash ', variables('masterPrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'), ' ', parameters('autoPooled'), ' ', parameters('orgSubs'))]"
 				}
 			}
 		}, {
@@ -1349,7 +1377,7 @@
 					]
 				},
 				"protectedSettings": {
-					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'))]"
+					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'), ' ', parameters('autoPooled'), ' ', parameters('orgSubs'))]"
 				}
 			}
 		}, {
@@ -1378,7 +1406,7 @@
 					]
 				},
 				"protectedSettings": {
-					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'))]"
+					"commandToExecute": "[concat('bash ', variables('nodePrepScriptFileName'), ' ', parameters('cloudAccessUsername'), ' ', variables('singlequote'), parameters('cloudAccessPassword'), variables('singlequote'), ' ', parameters('cloudAccessPoolId'), ' ', parameters('autoPooled'), ' ', parameters('orgSubs'))]"
 				}
 			}
 		}, {

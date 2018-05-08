@@ -16,6 +16,8 @@ NODECOUNT=$9
 MASTERCOUNT=${10}
 ROUTING=${11}
 BASTION=$(hostname -f)
+AADCLIENTID=${20}
+AADCLIENTSECRET="${21}"
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
@@ -127,6 +129,242 @@ cat > /home/${SUDOUSER}/postinstall4.yml <<EOF
       group: root
       mode: 0644
 EOF
+
+# Create vars.yml file for use by setup-azure-config.yml playbook
+
+cat > /home/${SUDOUSER}/vars.yml <<EOF
+g_tenantId: $TENANTID
+g_subscriptionId: $SUBSCRIPTIONID
+g_aadClientId: $AADCLIENTID
+g_aadClientSecret: $AADCLIENTSECRET
+g_resourceGroup: $RESOURCEGROUP
+g_location: $LOCATION
+EOF
+
+# Create Azure Cloud Provider configuration Playbook for Single Master Cluster
+
+cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
+#!/usr/bin/ansible-playbook 
+- hosts: masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    master_conf: /etc/origin/master/master-config.yaml
+  handlers:
+  - name: restart atomic-openshift-master
+    systemd:
+      state: restarted
+      name: atomic-openshift-master
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        {
+          "aadClientID" : "{{ g_aadClientId }}",
+          "aadClientSecret" : "{{ g_aadClientSecret }}",
+          "subscriptionID" : "{{ g_subscriptionId }}",
+          "tenantID" : "{{ g_tenantId }}",
+          "resourceGroup": "{{ g_resourceGroup }}",
+        } 
+    notify:
+    - restart atomic-openshift-master
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the master
+    modify_yaml:
+      dest: "{{ master_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
+      value:
+      - azure
+    - key: kubernetesMasterConfig.controllerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.controllerArguments.cloud-provider
+      value:
+      - azure
+    notify:
+    - restart atomic-openshift-master
+- hosts: nodes:!masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    node_conf: /etc/origin/node/node-config.yaml
+  handlers:
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        {
+          "aadClientID" : "{{ g_aadClientId }}",
+          "aadClientSecret" : "{{ g_aadClientSecret }}",
+          "subscriptionID" : "{{ g_subscriptionId }}",
+          "tenantID" : "{{ g_tenantId }}",
+          "resourceGroup": "{{ g_resourceGroup }}",
+        } 
+    notify:
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the node
+    modify_yaml:
+      dest: "{{ node_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubeletArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubeletArguments.cloud-provider
+      value:
+      - azure
+    notify:
+    - restart atomic-openshift-node
+EOF
+
+# Create Azure Cloud Provider configuration Playbook for Multi-Master Cluster
+
+cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
+#!/usr/bin/ansible-playbook 
+- hosts: masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    master_conf: /etc/origin/master/master-config.yaml
+  handlers:
+  - name: restart atomic-openshift-master-api
+    systemd:
+      state: restarted
+      name: atomic-openshift-master-api
+  - name: restart atomic-openshift-master-controllers
+    systemd:
+      state: restarted
+      name: atomic-openshift-master-controllers
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        {
+          "aadClientID" : "{{ g_aadClientId }}",
+          "aadClientSecret" : "{{ g_aadClientSecret }}",
+          "subscriptionID" : "{{ g_subscriptionId }}",
+          "tenantID" : "{{ g_tenantId }}",
+          "resourceGroup": "{{ g_resourceGroup }}",
+        } 
+    notify:
+    - restart atomic-openshift-master-api
+    - restart atomic-openshift-master-controllers
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the master
+    modify_yaml:
+      dest: "{{ master_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
+      value:
+      - azure
+    - key: kubernetesMasterConfig.controllerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.controllerArguments.cloud-provider
+      value:
+      - azure
+    notify:
+    - restart atomic-openshift-master-api
+    - restart atomic-openshift-master-controllers
+- hosts: nodes:!masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    node_conf: /etc/origin/node/node-config.yaml
+  handlers:
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        {
+          "aadClientID" : "{{ g_aadClientId }}",
+          "aadClientSecret" : "{{ g_aadClientSecret }}",
+          "subscriptionID" : "{{ g_subscriptionId }}",
+          "tenantID" : "{{ g_tenantId }}",
+          "resourceGroup": "{{ g_resourceGroup }}",
+        } 
+    notify:
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the node
+    modify_yaml:
+      dest: "{{ node_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubeletArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubeletArguments.cloud-provider
+      value:
+      - azure
+    notify:
+    - restart atomic-openshift-node
+EOF
+
 
 # Create Ansible Hosts File
 echo $(date) " - Create Ansible Hosts file"
@@ -495,6 +733,16 @@ else
 	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-controllers'"
 	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo systemctl restart atomic-openshift-master-api'"
 	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo systemctl restart atomic-openshift-master-controllers'"
+fi
+
+# Execute setup-azure-config playbook to configure Azure Cloud Provider
+echo $(date) "- Configuring OpenShift Cloud Provider to be Azure"
+
+if [ $MASTERCOUNT -eq 1 ]
+then
+   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-single-master.yml"
+else
+   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-multiple-master.yml"
 fi
 
 echo $(date) " - Script complete"

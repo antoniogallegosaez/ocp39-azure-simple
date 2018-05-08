@@ -4,6 +4,8 @@ echo $(date) " - Starting Script"
 USER=$1
 PASSWORD="$2"
 POOL_ID=$3
+AUTOPOOLED=$4
+ORGSUBS=$5
 
 # Verify that we have access to Red Hat Network
 ITER=0
@@ -26,33 +28,52 @@ done
 # Register Host with Cloud Access Subscription
 echo $(date) " - Register host with Cloud Access Subscription"
 
-
-subscription-manager register --username="$USER" --password="$PASSWORD" --force
-if [ $? -eq 0 ]; then
-   echo "Subscribed successfully"
+if [ "$ORGSUBS" = "true" ]
+	subscription-manager register --org="$USER" --activationkey="$PASSWORD" --force
+	if [ $? -eq 0 ]; then
+		echo "Subscribed successfully"
+	else
+		sleep 5
+		subscription-manager register --org="$USER" --activationkey="$PASSWORD" --force
+		if [ "$?" -eq 0 ]; then
+			echo "Subscribed successfully."
+		else
+			echo "Incorrect Username and / or Password specified"
+			exit 3
+		fi
+	fi
 else
-   sleep 5
-   subscription-manager register --username="$USER" --password="$PASSWORD" --force
-   if [ "$?" -eq 0 ]; then
-      echo "Subscribed successfully."
-   else
-      echo "Incorrect Username and / or Password specified"
-      exit 3
-   fi
+	subscription-manager register --username="$USER" --password="$PASSWORD" --force
+	if [ $? -eq 0 ]; then
+		echo "Subscribed successfully"
+	else
+		sleep 5
+		subscription-manager register --username="$USER" --password="$PASSWORD" --force
+		if [ "$?" -eq 0 ]; then
+			echo "Subscribed successfully."
+		else
+			echo "Incorrect Username and / or Password specified"
+			exit 3
+		fi
+	fi
 fi
 
-subscription-manager attach --pool=$POOL_ID
-if [ $? -eq 0 ]; then
-   echo "Pool attached successfully"
-else
-   sleep 5
-   subscription-manager attach --pool=$POOL_ID
-   if [ "$?" -eq 0 ]; then
-      echo "Pool attached successfully"
-   else
-      echo "Incorrect Pool ID or no entitlements available"
-      exit 4
-   fi
+if [ "$AUTOPOOLED" = "true" ]
+    echo "Subs autopooled. No need to attach pool id."
+else 
+    subscription-manager attach --pool=$POOL_ID
+    if [ $? -eq 0 ]; then
+        echo "Pool attached successfully"
+    else
+        sleep 5
+        subscription-manager attach --pool=$POOL_ID
+        if [ "$?" -eq 0 ]; then
+            echo "Pool attached successfully"
+        else
+            echo "Incorrect Pool ID or no entitlements available"
+              exit 4
+        fi
+    fi
 fi
 
 # Disable all repositories and enable only the required ones
