@@ -214,7 +214,8 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
           "primaryAvailabilitySetName": "{{ g_primaryAvailabilitySetName }}"
         } 
     notify:
-    - restart atomic-openshift-master
+    - restart atomic-openshift-master-controllers
+    - restart atomic-openshift-master-api
     - restart atomic-openshift-node
   - name: insert the azure disk config into the master
     modify_yaml:
@@ -235,7 +236,8 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
       value:
       - azure
     notify:
-    - restart atomic-openshift-master
+    - restart atomic-openshift-master-controllers
+    - restart atomic-openshift-master-api
 - hosts: nodes:!masters
   gather_facts: no
   vars_files:
