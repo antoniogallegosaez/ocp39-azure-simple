@@ -1,0 +1,103 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"_artifactsLocation": {
+			"value": "https://raw.githubusercontent.com/antoniogallegosaez/ocp39-azure-simple/master/"
+		},
+		"masterVmSize": {
+			"value": "Standard_DS4_v2"
+		},
+		"nodeVmSize": {
+			"value": "Standard_DS3_v2"
+		},
+		"openshiftClusterPrefix": {
+			"value": "ocp"
+		},
+		"openshiftMasterPublicIpDnsLabel": {
+			"value": "YOURNAMEFORMASTERENDPOINT"
+		},
+		"infraLbPublicIpDnsLabel": {
+			"value": "YOURNAMEFORINFRALBENDPOINT"
+		},
+		"masterInstanceCount": {
+			"value": 1
+		},
+		"nodeInstanceCount": {
+			"value": 1
+		},
+		"dataDiskSize": {
+			"value": 128
+		},
+		"adminUsername": {
+			"value": "ocpadmin"
+		},
+		"openshiftPassword": {
+			"value": "YOUROCPPWD"
+		},
+		"cloudAccessUsername": {
+			"value": "YOURUSERNAME"
+		},
+		"cloudAccessPassword": {
+			"value": "YOURRHNPWD"
+		},
+		"cloudAccessPoolId": {
+			"value": "YOURPOOLID"
+		},
+		"orgSubs": {
+			"value": "true"
+		},	
+		"autoPooled": {
+			"value": "true"
+		},		
+		"sshPublicKey": {
+			"value": "YOURPUBLICKEY"
+		},
+		"keyVaultResourceGroup": {
+			"value": "YOURRG"
+		},
+		"keyVaultName": {
+			"value": "YOURKEYVAULT"
+		},
+		"keyVaultSecret": {
+			"value": "YOURSECRET"
+		},
+		"defaultSubDomainType": {
+			"value": "custom"
+		},
+		"defaultSubDomain": {
+			"value": "YOURAPPSSUBDOMAIN"
+		},
+		"aadClientId": {
+			"value": "YOURAZURECLIENTID"
+		},
+		"aadClientSecret": {
+			"value": "YOURAZURECLIENTSECRET"
+		},
+		"tenantId": {
+			"value": "YOURAZURETENANTID"
+		},
+		"subscriptionId": {
+			"value": "YOURAZURESUBSCRIPTIONID"
+		},
+		"resourceGroup": {
+			"value": "YOURAZURERESOURCEGROUP"
+		},
+		"cloud": {
+			"value": "YOURAZURECLOUDNAME"
+		},
+		"location": {
+			"value": "YOURAZURELOCATION"
+		},
+		"vnetName": {
+			"value": "YOURAZUREVNETNAME"
+		},
+		"securityGroupName": {
+			"value": "YOURAZURESECGROUPNAME"
+		},
+		"primaryAvailabilitySetName": {
+			"value": "YOURAZUREAVAILABILITYZONENAME"
+		}
+	}
+}
+
