@@ -23,7 +23,11 @@ SUBSCRIPTIONID=${15}
 RESOURCEGROUP=${16}
 LOCATION=${17}
 VNETNAME=${18}
-STORAGEACCOUNTNAME=${18}
+STORAGEACCOUNTNAME=${19}
+INSTALLMETRICS=${20}
+INSTALLLOGGING=${21}
+INSTALLPROMETHEUS=${22}
+INSTALLSERVICEBROKERS=${23}
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
@@ -206,11 +210,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: AzureCloud
         location: {{ g_location }}
-        vnetName: {{ g_vnetName }}
-        securityGroupName: ocpn-nsg
-        primaryAvailabilitySetName: nodeavailabilityset
     notify:
     - restart atomic-openshift-master-controllers
     - restart atomic-openshift-master-api
@@ -226,13 +226,13 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
       - "{{ azure_conf }}"
     - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
       value:
-      - azure
+      - "azure"
     - key: kubernetesMasterConfig.controllerArguments.cloud-config
       value:
       - "{{ azure_conf }}"
     - key: kubernetesMasterConfig.controllerArguments.cloud-provider
       value:
-      - azure
+      - "azure"
     notify:
     - restart atomic-openshift-master-controllers
     - restart atomic-openshift-master-api
@@ -265,11 +265,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: AzureCloud
         location: {{ g_location }}
-        vnetName: {{ g_vnetName }}
-        securityGroupName: ocpn-nsg
-        primaryAvailabilitySetName: nodeavailabilityset     
     notify:
     - restart atomic-openshift-node
   - name: insert the azure disk config into the node
@@ -283,7 +279,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
       - "{{ azure_conf }}"
     - key: kubeletArguments.cloud-provider
       value:
-      - azure
+      - "azure"
     notify:
     - restart atomic-openshift-node
 EOF
@@ -329,11 +325,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: AzureCloud
         location: {{ g_location }}
-        vnetName: {{ g_vnetName }}
-        securityGroupName: ocpn-nsg
-        primaryAvailabilitySetName: nodeavailabilityset    
     notify:
     - restart atomic-openshift-master-api
     - restart atomic-openshift-master-controllers
@@ -349,13 +341,13 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
       - "{{ azure_conf }}"
     - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
       value:
-      - azure
+      - "azure"
     - key: kubernetesMasterConfig.controllerArguments.cloud-config
       value:
       - "{{ azure_conf }}"
     - key: kubernetesMasterConfig.controllerArguments.cloud-provider
       value:
-      - azure
+      - "azure"
     notify:
     - restart atomic-openshift-master-api
     - restart atomic-openshift-master-controllers
@@ -388,11 +380,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: AzureCloud
         location: {{ g_location }}
-        vnetName: {{ g_vnetName }}
-        securityGroupName: ocpn-nsg
-        primaryAvailabilitySetName: nodeavailabilityset
     notify:
     - restart atomic-openshift-node
   - name: insert the azure disk config into the node
@@ -406,7 +394,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
       - "{{ azure_conf }}"
     - key: kubeletArguments.cloud-provider
       value:
-      - azure
+      - "azure"
     notify:
     - restart atomic-openshift-node
 EOF
@@ -487,11 +475,12 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
-# Setup Default Storage Class
-name=azure
-default_storage_class=true
-provisioner='kubernetes.io/azure-disk'
-parameters='storageaccounttype: Standard_LRS\nkind: Shared'
+# Setup Azure Service Provider and Default Storage Class
+openshift_cloudprovider_kind=azure
+openshift_storageclass_name=azure
+openshift_storageclass_default=true
+openshift_storageclass_parameters='kubernetes.io/azure-disk'
+openshift_storageclass_provisioner='storageaccounttype: Standard_LRS\nkind: Shared'
 
 # Setup metrics
 openshift_master_metrics_public_url=https://hawkular-metrics.$ROUTING/hawkular/metrics
@@ -536,19 +525,19 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 
 # host group for masters
 [masters]
-$MASTER-0.$DOMAIN
+$MASTER-0
 
 [etcd]
-$MASTER-0.$DOMAIN
+$MASTER-0
 
 # host group for nodes
 [nodes]
-$MASTER-0.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
+$MASTER-0 openshift_node_labels="{'region': 'master', 'zone': 'default'}"
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
-$INFRA-0.$DOMAIN openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
+$INFRA-0 openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
 EOF
 for node in ocpn-{0..30}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpn >>/etc/ansible/hosts
 
 else
@@ -610,11 +599,12 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
-# Setup Default Storage Class
-name=azure
-default_storage_class=true
-provisioner='kubernetes.io/azure-disk'
-parameters='storageaccounttype: Standard_LRS\nkind: Shared'
+# Setup Azure Service Provider and Default Storage Class
+openshift_cloudprovider_kind=azure
+openshift_storageclass_name=azure
+openshift_storageclass_default=true
+openshift_storageclass_parameters='kubernetes.io/azure-disk'
+openshift_storageclass_provisioner='storageaccounttype: Standard_LRS\nkind: Shared'
 
 # Setup metrics
 openshift_master_metrics_public_url=https://hawkular-metrics.$ROUTING/hawkular/metrics
@@ -661,7 +651,7 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 [masters]
 EOF
 for node in ocpm-{0..3}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
+	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1
 done|grep ocpm >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
@@ -669,7 +659,7 @@ cat >> /etc/ansible/hosts <<EOF
 [etcd]
 EOF
 for node in ocpm-{0..3}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
+	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1
 done|grep ocpm >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
@@ -683,14 +673,14 @@ $BASTION
 [nodes]
 EOF
 for node in ocpm-{0..3}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
 done|grep ocpm >>/etc/ansible/hosts
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
 for node in ocpi-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpi >>/etc/ansible/hosts
 for node in ocpn-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpn >>/etc/ansible/hosts
 fi
 
@@ -718,18 +708,18 @@ runuser -l $SUDOUSER -c "ansible-playbook ~/preinstall.yml"
 
 # Prometheus bugfix: https://bugzilla.redhat.com/show_bug.cgi?id=1563494
 # ...Locally
-sed -i 's/v0.15.2/v3.9.14-2/g' /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml
+sed -i 's/v0.15.2/v3.9.25-1/g' /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml
 
 # ...On the masters
 if [ $MASTERCOUNT -ne 1 ]
 then
         for item in ocpm-0 ocpm-1 ocpm-2; do
   	      # Prometheus bugfix: https://bugzilla.redhat.com/show_bug.cgi?id=1563494
-              runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $item 'sudo sed -i \"s/v0.15.2/v3.9.14-2/g\" /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml'"
+              runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $item 'sudo sed -i \"s/v0.15.2/v3.9.25-1/g\" /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml'"
         done
 else
         # Prometheus bugfix: https://bugzilla.redhat.com/show_bug.cgi?id=1563494
-        runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo sed -i \"s/v0.15.2/v3.9.14-2/g\" /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml'"
+        runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo sed -i \"s/v0.15.2/v3.9.25-1/g\" /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml'"
 fi
 
 # Initiating installation of OpenShift Container Platform using Ansible Playbook
@@ -739,7 +729,6 @@ echo $(date) " - Running prereq playbook"
 runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml"
 
 echo $(date) " - Running install playbook"
-
 runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml"
 
 # Execute setup-azure-config playbook to configure Azure Cloud Provider
@@ -752,6 +741,41 @@ else
    runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-multiple-master.yml"
 fi
 
+# Deploy metrics in case it's selected
+if [ $INSTALLMETRICS = "true" ]
+then
+  echo $(date) "- Deploying metrics"
+  sed -i -e "s/openshift_metrics_install_metrics=false/openshift_metrics_install_metrics=true/" /etc/ansible/hosts
+  runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-metrics/config.yml"
+fi
+
+# Deploy logging in case it's selected
+if [ $INSTALLLOGGING = "true" ]
+then
+  echo $(date) "- Deploying logging"
+  sed -i -e "s/openshift_logging_install_logging=false/openshift_logging_install_logging=true/" /etc/ansible/hosts
+  runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-logging/config.yml"
+fi
+
+# Deploy prometheus in case it's selected
+if [ $INSTALLPROMETHEUS = "true" ]
+then
+  echo $(date) "- Deploying prometheus"
+  sed -i -e "s/openshift_hosted_prometheus_deploy=false/openshift_hosted_prometheus_deploy=true/" /etc/ansible/hosts
+  runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-prometheus/config.yml"
+fi
+
+# Deploy service brokers in case it's selected
+if [ $INSTALLSERVICEBROKERS = "true" ]
+then
+  echo $(date) "- Deploying service brokers"
+  sed -i -e "s/openshift_enable_service_catalog=false/openshift_enable_service_catalog=true/" /etc/ansible/hosts
+  sed -i -e "s/ansible_service_broker_install=false/ansible_service_broker_install=true/" /etc/ansible/hosts
+  sed -i -e "s/template_service_broker_install=false/template_service_broker_install=true/" /etc/ansible/hosts
+  runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/openshift-service-catalog/config.yml"
+fi
+
+# Modify sudoers
 echo $(date) " - Modifying sudoers"
 
 sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers

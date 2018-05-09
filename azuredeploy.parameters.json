@@ -76,7 +76,18 @@
 		},
 		"subscriptionId": {
 			"value": "YOURAZURESUBSCRIPTIONID"
-		}
+		},
+		"installMetrics": {
+			"value": "true"
+		},
+		"installLogging": {
+			"value": "true"
+		},
+		"installPrometheus": {
+			"value": "true"
+		},
+		"installServiceBrokers": {
+			"value": "true"
+		}		
 	}
 }
-

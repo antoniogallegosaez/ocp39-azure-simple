@@ -210,7 +210,35 @@
 			"metadata": {
 				"description": "Azure Subscription ID"
 			}
-		}
+		},
+		"installMetrics": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install metrics when it's true"
+			}
+		},
+		"installLogging": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install logging when it's true"
+			}
+		},
+		"installPrometheus": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install prometheus when it's true"
+			}
+		},
+		"installServiceBrokers": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install service brokers when it's true"
+			}
+		}	
 	},
 	"variables": {
 		"location": "[resourceGroup().location]",
@@ -1478,6 +1506,18 @@
 					},
 					"storageAccountName": {
 						"value": "[variables('newStorageAccountNode')]"
+					},
+					"installMetrics": {
+						"value": "[parameters('installMetrics')]"
+					},
+					"installLogging": {
+						"value": "[parameters('installLogging')]"
+					},
+					"installPrometheus": {
+						"value": "[parameters('installPrometheus')]"
+					},
+					"installServiceBrokers": {
+						"value": "[parameters('installServiceBrokers')]"
 					}	
 				}
 			}

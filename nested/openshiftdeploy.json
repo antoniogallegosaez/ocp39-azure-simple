@@ -164,7 +164,35 @@
 			"metadata": {
 				"description": "Azure Resource Group storage account name"
 			}
-		}		
+		},
+		"installMetrics": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install metrics when it's true"
+			}
+		},
+		"installLogging": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install logging when it's true"
+			}
+		},
+		"installPrometheus": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install prometheus when it's true"
+			}
+		},
+		"installServiceBrokers": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Install service brokers when it's true"
+			}
+		}						
 	},
 	"variables": {
 		"singlequote": "'",
@@ -190,7 +218,7 @@
 				]
 			},
 			"protectedSettings": {
-				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('location'), '\" \"', parameters('virtualNetworkName'), '\" \"', parameters('storageAccountName'), '\"')]"
+				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('location'), '\" \"', parameters('virtualNetworkName'), '\" \"', parameters('storageAccountName'), '\" \"', parameters('installMetrics'), '\" \"', parameters('installLogging'), '\" \"', parameters('installPrometheus'), '\" \"', parameters('installServiceBrokers'), '\"')]"
 			}
 		}
 	}],
