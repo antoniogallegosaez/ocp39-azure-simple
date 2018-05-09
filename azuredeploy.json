@@ -1415,7 +1415,7 @@
 				}
 			}
 		}, {
-			"name": "OpenShiftDeployment",
+			"name": "childOCPDeployment",
 			"type": "Microsoft.Resources/deployments",
 			"apiVersion": "[variables('apiVersionLinkTemplate')]",
 			"dependsOn": [
