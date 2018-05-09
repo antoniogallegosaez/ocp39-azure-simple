@@ -21,9 +21,8 @@ AADCLIENTSECRET="${13}"
 TENANTID=${14}
 SUBSCRIPTIONID=${15}
 RESOURCEGROUP=${16}
-CLOUD=${17}
-LOCATION=${18}
-VNETNAME=${19}
+LOCATION=${17}
+VNETNAME=${18}
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
@@ -164,11 +163,8 @@ g_subscriptionId: $SUBSCRIPTIONID
 g_aadClientId: $AADCLIENTID
 g_aadClientSecret: $AADCLIENTSECRET
 g_resourceGroup: $RESOURCEGROUP
-g_cloud: $CLOUD
 g_location: $LOCATION
 g_vnetName: $VNETNAME
-g_securityGroupName: $SECURITYGROUPNAME
-g_primaryAvailabilitySetName: $PRIMARYAVAILABILITYSETNAME
 EOF
 
 # Create Azure Cloud Provider configuration Playbook for Single Master Cluster
@@ -212,7 +208,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: {{ g_cloud }}
+        cloud: AzureCloud
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
         securityGroupName: ocpn-nsg
@@ -271,7 +267,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: {{ g_cloud }}
+        cloud: AzureCloud
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
         securityGroupName: ocpn-nsg
@@ -335,7 +331,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: {{ g_cloud }}
+        cloud: AzureCloud
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
         securityGroupName: ocpn-nsg
@@ -394,7 +390,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         tenantId: {{ g_tenantId }}
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
-        cloud: {{ g_cloud }}
+        cloud: AzureCloud
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
         securityGroupName: ocpn-nsg
