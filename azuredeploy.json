@@ -90,15 +90,6 @@
 				"description": "Number of OpenShift nodes"
 			}
 		},
-		"dataDiskSize": {
-			"type": "int",
-			"defaultValue": 128,
-			"minValue": 1,
-			"allowedValues": [128, 512, 1023],
-			"metadata": {
-				"description": "Size of Datadisk in GB for Docker volume"
-			}
-		},
 		"adminUsername": {
 			"type": "string",
 			"defaultValue": "ocpadmin",
@@ -1178,16 +1169,7 @@
 						},
 						"caching": "ReadWrite",
 						"createOption": "FromImage"
-					},
-					"dataDisks": [{
-						"name": "[concat(variables('openshiftMasterHostname'), copyIndex(), '-docker-pool')]",
-						"diskSizeGB": "[parameters('dataDiskSize')]",
-						"lun": 0,
-						"vhd": {
-							"uri": "[concat(concat(reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('newStorageAccountMaster')), variables('apiVersionStorage')).primaryEndpoints['blob'], 'vhds/'), variables('openshiftMasterHostname'), copyIndex(), '-docker-pool.vhd')]"
-						},
-						"createOption": "Empty"
-					}]
+					}
 				},
 				"networkProfile": {
 					"networkInterfaces": [{
@@ -1240,16 +1222,7 @@
 						},
 						"caching": "ReadWrite",
 						"createOption": "FromImage"
-					},
-					"dataDisks": [{
-						"name": "[concat(variables('openshiftInfraHostname'), copyIndex(), '-docker-pool')]",
-						"diskSizeGB": "[parameters('dataDiskSize')]",
-						"lun": 0,
-						"vhd": {
-							"uri": "[concat(concat(reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('newStorageAccountMaster')), variables('apiVersionStorage')).primaryEndpoints['blob'], 'vhds/'), variables('openshiftInfraHostname'), copyIndex(), 'docker-pool.vhd')]"
-						},
-						"createOption": "Empty"
-					}]
+					}
 				},
 				"networkProfile": {
 					"networkInterfaces": [{
@@ -1302,16 +1275,7 @@
 						},
 						"caching": "ReadWrite",
 						"createOption": "FromImage"
-					},
-					"dataDisks": [{
-						"name": "[concat(variables('openshiftNodeHostname'), copyIndex(), '-docker-pool')]",
-						"diskSizeGB": "[parameters('dataDiskSize')]",
-						"lun": 0,
-						"vhd": {
-							"uri": "[concat(concat(reference(resourceId(resourceGroup().name, 'Microsoft.Storage/storageAccounts', variables('newStorageAccountNode')), variables('apiVersionStorage')).primaryEndpoints['blob'], 'vhds/'), variables('openshiftNodeHostname'), copyIndex(), '-docker-pool.vhd')]"
-						},
-						"createOption": "Empty"
-					}]
+					}
 				},
 				"networkProfile": {
 					"networkInterfaces": [{
