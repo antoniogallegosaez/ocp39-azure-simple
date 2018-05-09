@@ -143,6 +143,20 @@
 			"metadata": {
 				"description": "Azure Resource Group Name"
 			}
+		},
+		"location": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure Resource Group Location"
+			}
+		},
+		"virtualNetworkName": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure Resource Group virtual network name"
+			}
 		}
 	},
 	"variables": {
@@ -169,7 +183,7 @@
 				]
 			},
 			"protectedSettings": {
-				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', variables('location'), '\" \"', variables('virtualNetworkName'), '\"')]"
+				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('location'), '\" \"', parameters('virtualNetworkName'), '\"')]"
 			}
 		}
 	}],
