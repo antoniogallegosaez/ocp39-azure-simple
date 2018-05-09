@@ -23,6 +23,7 @@ SUBSCRIPTIONID=${15}
 RESOURCEGROUP=${16}
 LOCATION=${17}
 VNETNAME=${18}
+STORAGEACCOUNTNAME=${18}
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
@@ -50,7 +51,7 @@ roles_path = roles/
 library = /usr/share/ansible/openshift-ansible/roles/lib_utils/library
 gathering = smart
 fact_caching = jsonfile
-fact_caching_connection = $HOME/ansible/facts
+fact_caching_connection = $HOME
 fact_caching_timeout = 600
 log_path = $HOME/ansible.log
 nocows = 1
@@ -433,7 +434,7 @@ deployment_type=openshift-enterprise
 docker_udev_workaround=true
 openshift_use_dnsmasq=true
 # Weird error when installing single master cluster fails on docker version, even though correct
-openshift_disable_check=disk_availability,package_version,package_update
+openshift_disable_check=disk_availability,package_version,package_update,memory_availability,disk_availability,docker_storage,docker_storage_driver
 openshift_master_default_subdomain=$ROUTING
 openshift_override_hostname_check=true
 osm_use_cockpit=true
@@ -493,7 +494,7 @@ openshift_logging_kibana_hostname=kibana.$ROUTING
 openshift_logging_es_nodeselector={"region":"infra"}
 openshift_logging_curator_nodeselector={"region":"infra"}
 openshift_logging_kibana_nodeselector={"region":"infra"}
-openshift_logging_fluentd_nodeselector={"region":"primary"}
+openshift_logging_fluentd_nodeselector={"zone":"default"}
 openshift_logging_es_pvc_size=10Gi
 openshift_logging_es_pvc_dynamic=true
 
@@ -610,7 +611,7 @@ openshift_logging_kibana_hostname=kibana.$ROUTING
 openshift_logging_es_nodeselector={"region":"infra"}
 openshift_logging_curator_nodeselector={"region":"infra"}
 openshift_logging_kibana_nodeselector={"region":"infra"}
-openshift_logging_fluentd_nodeselector={"region":"primary"}
+openshift_logging_fluentd_nodeselector={"zone":"default"}
 openshift_logging_es_pvc_size=10Gi
 openshift_logging_es_pvc_dynamic=true
 

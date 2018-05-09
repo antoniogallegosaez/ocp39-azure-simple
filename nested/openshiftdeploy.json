@@ -157,7 +157,14 @@
 			"metadata": {
 				"description": "Azure Resource Group virtual network name"
 			}
-		}
+		},
+		"storageAccountName": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure Resource Group storage account name"
+			}
+		}		
 	},
 	"variables": {
 		"singlequote": "'",
@@ -183,7 +190,7 @@
 				]
 			},
 			"protectedSettings": {
-				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('location'), '\" \"', parameters('virtualNetworkName'), '\"')]"
+				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('location'), '\" \"', parameters('virtualNetworkName'), '\" \"', parameters('storageAccountName'), '\"')]"
 			}
 		}
 	}],

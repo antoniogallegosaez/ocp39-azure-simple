@@ -1479,7 +1479,10 @@
 					},
 					"virtualNetworkName": {
 						"value": "[variables('virtualNetworkName')]"
-					}
+					},
+					"storageAccountName": {
+						"value": "[variables('newStorageAccountNode')]"
+					}	
 				}
 			}
 		}
