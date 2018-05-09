@@ -181,7 +181,7 @@ openshift_use_dnsmasq=true
 # Weird error when installing single master cluster fails on docker version, even though correct
 openshift_disable_check=disk_availability,package_version,package_update,memory_availability,disk_availability,docker_storage,docker_storage_driver
 openshift_master_default_subdomain=$ROUTING
-openshift_override_hostname_check=true
+openshift_set_hostname=true
 osm_use_cockpit=true
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 
@@ -275,19 +275,19 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 
 # host group for masters
 [masters]
-$MASTER-0
+$MASTER-0.$DOMAIN
 
 [etcd]
-$MASTER-0
+$MASTER-0.$DOMAIN
 
 # host group for nodes
 [nodes]
-$MASTER-0 openshift_node_labels="{'region': 'master', 'zone': 'default'}"
+$MASTER-0.$DOMAIN openshift_hostname=$MASTER-0 openshift_node_labels="{'region': 'master', 'zone': 'default'}"
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
-$INFRA-0 openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
+$INFRA-0.$DOMAIN openshift_hostname=$INFRA-0 openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
 EOF
 for node in ocpn-{0..30}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpn >>/etc/ansible/hosts
 
 else
@@ -310,7 +310,7 @@ docker_udev_workaround=true
 openshift_use_dnsmasq=true
 openshift_disable_check=disk_availability,package_version,package_update,memory_availability,disk_availability,docker_storage,docker_storage_driver
 openshift_master_default_subdomain=$ROUTING
-openshift_override_hostname_check=true
+openshift_set_hostname=true
 osm_use_cockpit=true
 os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 
@@ -407,7 +407,7 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 [masters]
 EOF
 for node in ocpm-{0..3}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1
+	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
 done|grep ocpm >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
@@ -415,7 +415,7 @@ cat >> /etc/ansible/hosts <<EOF
 [etcd]
 EOF
 for node in ocpm-{0..3}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1
+	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
 done|grep ocpm >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
@@ -429,14 +429,14 @@ $BASTION
 [nodes]
 EOF
 for node in ocpm-{0..3}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
 done|grep ocpm >>/etc/ansible/hosts
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
 for node in ocpi-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpi >>/etc/ansible/hosts
 for node in ocpn-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpn >>/etc/ansible/hosts
 fi
 
