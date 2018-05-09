@@ -24,8 +24,6 @@ RESOURCEGROUP=${16}
 CLOUD=${17}
 LOCATION=${18}
 VNETNAME=${19}
-SECURITYGROUPNAME=${20}
-PRIMARYAVAILABILITYSETNAME=${21}
 
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
@@ -217,8 +215,8 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
         cloud: {{ g_cloud }}
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
-        securityGroupName: {{ g_securityGroupName }}
-        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}
+        securityGroupName: ocpn-nsg
+        primaryAvailabilitySetName: nodeavailabilityset
     notify:
     - restart atomic-openshift-master-controllers
     - restart atomic-openshift-master-api
@@ -276,8 +274,8 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
         cloud: {{ g_cloud }}
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
-        securityGroupName: {{ g_securityGroupName }}
-        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}     
+        securityGroupName: ocpn-nsg
+        primaryAvailabilitySetName: nodeavailabilityset     
     notify:
     - restart atomic-openshift-node
   - name: insert the azure disk config into the node
@@ -340,8 +338,8 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         cloud: {{ g_cloud }}
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
-        securityGroupName: {{ g_securityGroupName }}
-        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}    
+        securityGroupName: ocpn-nsg
+        primaryAvailabilitySetName: nodeavailabilityset    
     notify:
     - restart atomic-openshift-master-api
     - restart atomic-openshift-master-controllers
@@ -399,8 +397,8 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         cloud: {{ g_cloud }}
         location: {{ g_location }}
         vnetName: {{ g_vnetName }}
-        securityGroupName: {{ g_securityGroupName }}
-        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}
+        securityGroupName: ocpn-nsg
+        primaryAvailabilitySetName: nodeavailabilityset
     notify:
     - restart atomic-openshift-node
   - name: insert the azure disk config into the node
@@ -432,7 +430,6 @@ cat > /etc/ansible/hosts <<EOF
 masters
 etcd
 nodes
-nfs
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
@@ -451,17 +448,24 @@ os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 
 # Enable CRI-O
 openshift_use_crio=true
+openshift_crio_enable_docker_gc=true
 
 # Deploy Prometheus
-openshift_hosted_prometheus_deploy=true
+openshift_hosted_prometheus_deploy=false
 openshift_prometheus_namespace=openshift-metrics
 openshift_prometheus_node_selector={"region":"infra"}
-openshift_prometheus_storage_kind=nfs
-openshift_prometheus_alertmanager_storage_kind=nfs
-openshift_prometheus_alertbuffer_storage_kind=nfs
-openshift_prometheus_storage_type=pvc
-openshift_prometheus_alertmanager_storage_type=pvc
-openshift_prometheus_alertbuffer_storage_type=pvc
+openshift_prometheus_storage_kind=dynamic
+openshift_prometheus_storage_volume_name=prometheus
+openshift_prometheus_storage_volume_size=8Gi
+openshift_prometheus_storage_type='pvc'
+openshift_prometheus_alertmanager_storage_kind=dynamic
+openshift_prometheus_alertmanager_storage_volume_name=prometheus-alertmanager
+openshift_prometheus_alertmanager_storage_volume_size=1Gi
+openshift_prometheus_alertmanager_storage_type='pvc'
+openshift_prometheus_alertbuffer_storage_kind=dynamic
+openshift_prometheus_alertbuffer_storage_volume_name=prometheus-alertbuffer
+openshift_prometheus_alertbuffer_storage_volume_size=1Gi
+openshift_prometheus_alertbuffer_storage_type='pvc'
 
 # apply updated node defaults
 openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
@@ -476,48 +480,45 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
-# Configure persistent storage via nfs server on master
-openshift_hosted_registry_storage_kind=nfs
-openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
-openshift_hosted_registry_storage_host=$MASTER-0.$DOMAIN
-openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
-openshift_hosted_registry_storage_nfs_directory=/exports
-openshift_hosted_registry_storage_volume_name=registry
-openshift_hosted_registry_storage_volume_size=10Gi
-
 # Setup metrics
-openshift_hosted_metrics_deploy=true
-openshift_hosted_metrics_storage_kind=nfs
-openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
-openshift_hosted_metrics_storage_host=$MASTER-0.$DOMAIN
-openshift_metrics_storage_nfs_options='*(rw,root_squash)'
-openshift_hosted_metrics_storage_nfs_directory=/exports
-openshift_hosted_metrics_storage_volume_name=metrics
-openshift_hosted_metrics_storage_volume_size=10Gi
+openshift_master_metrics_public_url=https://hawkular-metrics.$ROUTING/hawkular/metrics
+openshift_metrics_install_metrics=false
 openshift_metrics_hawkular_hostname=hawkular-metrics.$ROUTING
+openshift_metrics_hawkular_nodeselector={"region":"infra"}
+openshift_metrics_cassandra_nodeselector={"region":"infra"}
+openshift_metrics_heapster_nodeselector={"region":"infra"}
+openshift_metrics_cassandra_pvc_size=10Gi
+openshift_metrics_cassandra_storage_type=dynamic
 
 # Setup logging
-openshift_logging_install_logging=true
-openshift_logging_es_pvc_dynamic=false
-openshift_logging_storage_kind=nfs
-openshift_logging_storage_access_modes=['ReadWriteOnce']
-openshift_logging_storage_host=$MASTER-0.$DOMAIN
-openshift_logging_storage_nfs_directory=/exports
-openshift_logging_storage_nfs_options='*(rw,root_squash)'
-openshift_logging_storage_volume_name=logging
-openshift_logging_storage_volume_size=10Gi
-#openshift_logging_storage_labels={'storage': 'logging'}
-openshift_logging_kibana_hostname=kibana.$ROUTING
+openshift_master_logging_public_url=https://kibana.$ROUTING
 openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:8443
+openshift_logging_use_ops=false
+openshift_logging_namespace=logging
+openshift_logging_install_logging=false
+openshift_logging_kibana_hostname=kibana.$ROUTING
+openshift_logging_es_nodeselector={"region":"infra"}
+openshift_logging_curator_nodeselector={"region":"infra"}
+openshift_logging_kibana_nodeselector={"region":"infra"}
+openshift_logging_fluentd_nodeselector={"region":"primary"}
+openshift_logging_es_pvc_size=10Gi
+openshift_logging_es_pvc_dynamic=true
 
-# Setup storage for etcd2, for the new Service Broker
-openshift_hosted_etcd_storage_kind=nfs
-openshift_hosted_etcd_storage_nfs_options="*(rw,root_squash,sync,no_wdelay)"
-openshift_hosted_etcd_storage_host=$MASTER-0.$DOMAIN
-openshift_hosted_etcd_storage_nfs_directory=/exports
-openshift_hosted_etcd_storage_volume_name=etcd-vol2
+# Setup service catalog and brokers
+openshift_enable_service_catalog=false
+ansible_service_broker_install=false
+template_service_broker_install=false
+dynamic_volumes_check=false
+openshift_service_catalog_image_version=latest
+ansible_service_broker_image_prefix=registry.access.redhat.com/openshift3/ose-
+ansible_service_broker_registry_url="registry.access.redhat.com"
+openshift_service_catalog_image_prefix=registry.access.redhat.com/openshift3/ose-
+template_service_broker_selector={"region":"infra"}
+openshift_template_service_broker_namespaces=['openshift']
+openshift_hosted_etcd_storage_kind=dynamic
+openshift_hosted_etcd_storage_volume_name=etcd-vol
 openshift_hosted_etcd_storage_access_modes=["ReadWriteOnce"]
-openshift_hosted_etcd_storage_volume_size=1G
+openshift_hosted_etcd_storage_volume_size=1Gi
 openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 
 # host group for masters
@@ -548,7 +549,6 @@ cat > /etc/ansible/hosts <<EOF
 masters
 nodes
 etcd
-nfs
 lb
 
 # Set variables common for all OSEv3 hosts
@@ -559,7 +559,7 @@ openshift_install_examples=true
 deployment_type=openshift-enterprise
 docker_udev_workaround=true
 openshift_use_dnsmasq=true
-openshift_disable_check=disk_availability,package_version,package_update
+openshift_disable_check=disk_availability,package_version,package_update,memory_availability,disk_availability,docker_storage,docker_storage_driver
 openshift_master_default_subdomain=$ROUTING
 openshift_override_hostname_check=true
 osm_use_cockpit=true
@@ -567,17 +567,24 @@ os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
 
 # Enable CRI-O
 openshift_use_crio=true
+openshift_crio_enable_docker_gc=true
 
 # Deploy Prometheus
-openshift_hosted_prometheus_deploy=true
+openshift_hosted_prometheus_deploy=false
 openshift_prometheus_namespace=openshift-metrics
 openshift_prometheus_node_selector={"region":"infra"}
-openshift_prometheus_storage_kind=nfs
-openshift_prometheus_alertmanager_storage_kind=nfs
-openshift_prometheus_alertbuffer_storage_kind=nfs
-openshift_prometheus_storage_type=pvc
-openshift_prometheus_alertmanager_storage_type=pvc
-openshift_prometheus_alertbuffer_storage_type=pvc
+openshift_prometheus_storage_kind=dynamic
+openshift_prometheus_storage_volume_name=prometheus
+openshift_prometheus_storage_volume_size=8Gi
+openshift_prometheus_storage_type='pvc'
+openshift_prometheus_alertmanager_storage_kind=dynamic
+openshift_prometheus_alertmanager_storage_volume_name=prometheus-alertmanager
+openshift_prometheus_alertmanager_storage_volume_size=1Gi
+openshift_prometheus_alertmanager_storage_type='pvc'
+openshift_prometheus_alertbuffer_storage_kind=dynamic
+openshift_prometheus_alertbuffer_storage_volume_name=prometheus-alertbuffer
+openshift_prometheus_alertbuffer_storage_volume_size=1Gi
+openshift_prometheus_alertbuffer_storage_type='pvc'
 
 # apply updated node defaults
 openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
@@ -593,48 +600,45 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
-# Configure persistent storage via nfs server on master
-openshift_hosted_registry_storage_kind=nfs
-openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
-openshift_hosted_registry_storage_host=$MASTER-0.$DOMAIN
-openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
-openshift_hosted_registry_storage_nfs_directory=/exports
-openshift_hosted_registry_storage_volume_name=registry
-openshift_hosted_registry_storage_volume_size=5Gi
-
 # Setup metrics
-openshift_hosted_metrics_deploy=true
-openshift_hosted_metrics_storage_kind=nfs
-openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
-openshift_hosted_metrics_storage_host=$MASTER-0.$DOMAIN
-openshift_metrics_storage_nfs_options='*(rw,root_squash)'
-openshift_hosted_metrics_storage_nfs_directory=/exports
-openshift_hosted_metrics_storage_volume_name=metrics
-openshift_hosted_metrics_storage_volume_size=10Gi
-openshift_hosted_metrics_public_url=hawkular-metrics.$ROUTING
+openshift_master_metrics_public_url=https://hawkular-metrics.$ROUTING/hawkular/metrics
+openshift_metrics_install_metrics=false
+openshift_metrics_hawkular_hostname=hawkular-metrics.$ROUTING
+openshift_metrics_hawkular_nodeselector={"region":"infra"}
+openshift_metrics_cassandra_nodeselector={"region":"infra"}
+openshift_metrics_heapster_nodeselector={"region":"infra"}
+openshift_metrics_cassandra_pvc_size=10Gi
+openshift_metrics_cassandra_storage_type=dynamic
 
 # Setup logging
-openshift_logging_install_logging=true
-openshift_logging_es_pvc_dynamic=false
-openshift_logging_storage_kind=nfs
-openshift_logging_storage_access_modes=['ReadWriteOnce']
-openshift_logging_storage_host=$MASTER-0.$DOMAIN
-openshift_logging_storage_nfs_directory=/exports
-openshift_logging_storage_nfs_options='*(rw,root_squash)'
-openshift_logging_storage_volume_name=logging
-openshift_logging_storage_volume_size=10Gi
-openshift_logging_storage_labels={'storage': 'logging'}
-openshift_logging_kibana_hostname=kibana.$ROUTING
+openshift_master_logging_public_url=https://kibana.$ROUTING
 openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:8443
+openshift_logging_use_ops=false
+openshift_logging_namespace=logging
+openshift_logging_install_logging=false
+openshift_logging_kibana_hostname=kibana.$ROUTING
+openshift_logging_es_nodeselector={"region":"infra"}
+openshift_logging_curator_nodeselector={"region":"infra"}
+openshift_logging_kibana_nodeselector={"region":"infra"}
+openshift_logging_fluentd_nodeselector={"region":"primary"}
+openshift_logging_es_pvc_size=10Gi
+openshift_logging_es_pvc_dynamic=true
 
-# Setup storage for etcd2, for the new Service Broker
-openshift_hosted_etcd_storage_kind=nfs
-openshift_hosted_etcd_storage_nfs_options="*(rw,root_squash,sync,no_wdelay)"
-openshift_hosted_etcd_storage_host=$MASTER-0.$DOMAIN
-openshift_hosted_etcd_storage_nfs_directory=/exports
-openshift_hosted_etcd_storage_volume_name=etcd-vol2
+# Setup service catalog and brokers
+openshift_enable_service_catalog=false
+ansible_service_broker_install=false
+template_service_broker_install=false
+dynamic_volumes_check=false
+openshift_service_catalog_image_version=latest
+ansible_service_broker_image_prefix=registry.access.redhat.com/openshift3/ose-
+ansible_service_broker_registry_url="registry.access.redhat.com"
+openshift_service_catalog_image_prefix=registry.access.redhat.com/openshift3/ose-
+template_service_broker_selector={"region":"infra"}
+openshift_template_service_broker_namespaces=['openshift']
+openshift_hosted_etcd_storage_kind=dynamic
+openshift_hosted_etcd_storage_volume_name=etcd-vol
 openshift_hosted_etcd_storage_access_modes=["ReadWriteOnce"]
-openshift_hosted_etcd_storage_volume_size=1G
+openshift_hosted_etcd_storage_volume_size=1Gi
 openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 
 # host group for masters
@@ -722,6 +726,16 @@ echo $(date) " - Running install playbook"
 
 runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml"
 
+# Execute setup-azure-config playbook to configure Azure Cloud Provider
+echo $(date) "- Configuring OpenShift Cloud Provider to be Azure"
+
+if [ $MASTERCOUNT -eq 1 ]
+then
+   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-single-master.yml"
+else
+   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-multiple-master.yml"
+fi
+
 echo $(date) " - Modifying sudoers"
 
 sed -i -e "s/Defaults    requiretty/# Defaults    requiretty/" /etc/sudoers
@@ -787,16 +801,6 @@ else
 	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-controllers'"
 	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo systemctl restart atomic-openshift-master-api'"
 	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo systemctl restart atomic-openshift-master-controllers'"
-fi
-
-# Execute setup-azure-config playbook to configure Azure Cloud Provider
-echo $(date) "- Configuring OpenShift Cloud Provider to be Azure"
-
-if [ $MASTERCOUNT -eq 1 ]
-then
-   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-single-master.yml"
-else
-   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-multiple-master.yml"
 fi
 
 echo $(date) " - Script complete"

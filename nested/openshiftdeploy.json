@@ -143,41 +143,6 @@
 			"metadata": {
 				"description": "Azure Resource Group Name"
 			}
-		},
-		"cloud": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure Cloud Name"
-			}
-		},
-		"location": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure Location"
-			}
-		},
-		"vnetName": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure virtual network containing appnodes"
-			}
-		},
-		"securityGroupName": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure security group for appnodes"
-			}
-		},
-		"primaryAvailabilitySetName": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Availability set for appnodes"
-			}
 		}
 	},
 	"variables": {
@@ -204,7 +169,7 @@
 				]
 			},
 			"protectedSettings": {
-				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('cloud'), '\" \"', parameters('location'), '\" \"', parameters('vnetName'), '\" \"', parameters('securityGroupName'), '\" \"', parameters('primaryAvailabilitySetName'), '\"')]"
+				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', variables('cloud'), '\" \"', variables('location'), '\" \"', variables('virtualNetworkName'), '\"')]"
 			}
 		}
 	}],

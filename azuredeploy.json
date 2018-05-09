@@ -228,44 +228,10 @@
 			"metadata": {
 				"description": "Azure Resource Group Name"
 			}
-		},
-		"cloud": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure Cloud Name"
-			}
-		},
-		"location": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure Location"
-			}
-		},
-		"vnetName": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure virtual network containing appnodes"
-			}
-		},
-		"securityGroupName": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure security group for appnodes"
-			}
-		},
-		"primaryAvailabilitySetName": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Availability set for appnodes"
-			}
 		}
 	},
 	"variables": {
+		"cloud": "[cloud().name]",
 		"location": "[resourceGroup().location]",
 		"apiVersionCompute": "2015-06-15",
 		"apiVersionNetwork": "2016-03-30",
@@ -1550,19 +1516,13 @@
 						"value": "[parameters('resourceGroup')]"
 					},
 					"cloud": {
-						"value": "[parameters('cloud')]"
+						"value": "[variables('cloud')]"
 					},
 					"location": {
-						"value": "[parameters('location')]"
+						"value": "[variables('location')]"
 					},
-					"vnetName": {
-						"value": "[parameters('vnetName')]"
-					},
-					"securityGroupName": {
-						"value": "[parameters('securityGroupName')]"
-					},
-					"primaryAvailabilitySetName": {
-						"value": "[parameters('primaryAvailabilitySetName')]"
+					"virtualNetworkName": {
+						"value": "[variables('virtualNetworkName')]"
 					}
 				}
 			}

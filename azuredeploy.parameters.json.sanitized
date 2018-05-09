@@ -82,21 +82,6 @@
 		},
 		"resourceGroup": {
 			"value": "YOURAZURERESOURCEGROUP"
-		},
-		"cloud": {
-			"value": "YOURAZURECLOUDNAME"
-		},
-		"location": {
-			"value": "YOURAZURELOCATION"
-		},
-		"vnetName": {
-			"value": "YOURAZUREVNETNAME"
-		},
-		"securityGroupName": {
-			"value": "YOURAZURESECGROUPNAME"
-		},
-		"primaryAvailabilitySetName": {
-			"value": "YOURAZUREAVAILABILITYZONENAME"
 		}
 	}
 }
