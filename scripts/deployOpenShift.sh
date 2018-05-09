@@ -613,7 +613,7 @@ openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 
 # Setup Default Storage Class
 name=azure
 default_storage_class=true
-provisioner=kubernetes.io/azure-disk
+provisioner='kubernetes.io/azure-disk'
 parameters='storageaccounttype: Standard_LRS\nkind: Shared'
 
 # Setup metrics
