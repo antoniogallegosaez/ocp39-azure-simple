@@ -66,9 +66,6 @@ pipelining = True
 timeout = 10
 EOF
 
-# Adjust ansible log permissions
-runuser -c "chmod a+w /var/log/ansible.log"
-
 # Create Ansible Playbook for Post Installation task
 echo $(date) " - Create Ansible Playbook for Post Installation task"
 
