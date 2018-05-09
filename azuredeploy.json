@@ -222,7 +222,7 @@
 		}
 	},
 	"variables": {
-		"cloud": "[cloud().name]",
+		"cloudname": "[cloud().name]",
 		"location": "[resourceGroup().location]",
 		"apiVersionCompute": "2015-06-15",
 		"apiVersionNetwork": "2016-03-30",
@@ -1479,7 +1479,7 @@
 					"resourceGroup": {
 						"value": "[parameters('resourceGroup')]"
 					},
-					"cloud": {
+					"cloudname": {
 						"value": "[variables('cloud')]"
 					},
 					"location": {

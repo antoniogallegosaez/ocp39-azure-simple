@@ -111,7 +111,7 @@ EOF
 # Run on only MASTER-0
 cat > /home/${SUDOUSER}/postinstall2.yml <<EOF
 ---
-- hosts: nfs
+- hosts: firstmaster
   remote_user: ${SUDOUSER}
   become: yes
   become_method: sudo
@@ -528,9 +528,6 @@ $MASTER-0.$DOMAIN
 [etcd]
 $MASTER-0.$DOMAIN
 
-[nfs]
-$MASTER-0.$DOMAIN
-
 # host group for nodes
 [nodes]
 $MASTER-0.$DOMAIN openshift_node_labels="{'region': 'master', 'zone': 'default'}"
@@ -657,7 +654,7 @@ for node in ocpm-{0..3}; do
 done|grep ocpm >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
-[nfs]
+[firstmaster]
 $MASTER-0.$DOMAIN
 
 [lb]
