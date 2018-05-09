@@ -3,7 +3,7 @@
 	"contentVersion": "1.0.0.0",
 	"parameters": {
 		"_artifactsLocation": {
-			"value": "https://raw.githubusercontent.com/mglantz/ocp39-azure-simple/master/"
+			"value": "https://raw.githubusercontent.com/antoniogallegosaez/ocp39-azure-simple/master/"
 		},
 		"masterVmSize": {
 			"value": "Standard_DS4_v2"
@@ -15,10 +15,10 @@
 			"value": "ocp"
 		},
 		"openshiftMasterPublicIpDnsLabel": {
-			"value": "REPLACEmaster"
+			"value": "YOURNAMEFORMASTERENDPOINT"
 		},
 		"infraLbPublicIpDnsLabel": {
-			"value": "REPLACEapps"
+			"value": "YOURNAMEFORINFRALBENDPOINT"
 		},
 		"masterInstanceCount": {
 			"value": 1
@@ -26,41 +26,57 @@
 		"nodeInstanceCount": {
 			"value": 1
 		},
-		"dataDiskSize": {
-			"value": 128
-		},
 		"adminUsername": {
-			"value": "OCP_USER"
+			"value": "ocpadmin"
 		},
 		"openshiftPassword": {
-			"value": "OCP_PASSWORD"
+			"value": "YOUROCPPWD"
 		},
 		"cloudAccessUsername": {
-			"value": "RHN_ACCOUNT"
+			"value": "YOURUSERNAME"
 		},
 		"cloudAccessPassword": {
-			"value": "RHN_PASSWORD"
+			"value": "YOURRHNPWD"
 		},
 		"cloudAccessPoolId": {
-			"value": "SUBSCRIPTION_POOL_ID"
+			"value": "YOURPOOLID"
 		},
+		"orgSubs": {
+			"value": "true"
+		},	
+		"autoPooled": {
+			"value": "true"
+		},		
 		"sshPublicKey": {
-			"value": "PUBLIC_SSH_KEY"
+			"value": "YOURPUBLICKEY"
 		},
 		"keyVaultResourceGroup": {
-			"value": "REPLACE"
+			"value": "YOURRG"
 		},
 		"keyVaultName": {
-			"value": "REPLACEKeyVaultName"
+			"value": "YOURKEYVAULT"
 		},
 		"keyVaultSecret": {
-			"value": "REPLACESecretName"
+			"value": "YOURSECRET"
 		},
 		"defaultSubDomainType": {
-			"value": "xipio"
+			"value": "custom"
 		},
 		"defaultSubDomain": {
-			"value": "customdomain.com"
+			"value": "YOURAPPSSUBDOMAIN"
+		},
+		"aadClientId": {
+			"value": "YOURAZURECLIENTID"
+		},
+		"aadClientSecret": {
+			"value": "YOURAZURECLIENTSECRET"
+		},
+		"tenantId": {
+			"value": "YOURAZURETENANTID"
+		},
+		"subscriptionId": {
+			"value": "YOURAZURESUBSCRIPTIONID"
 		}
 	}
 }
+
