@@ -53,7 +53,7 @@ gathering = smart
 fact_caching = jsonfile
 fact_caching_connection = /home/${SUDOUSER}
 fact_caching_timeout = 600
-log_path = /home/${SUDOUSER/ansible.log
+log_path = /home/${SUDOUSER}/ansible.log
 nocows = 1
 callback_whitelist = profile_tasks
 
