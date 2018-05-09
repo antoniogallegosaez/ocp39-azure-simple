@@ -411,6 +411,19 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
     - restart atomic-openshift-node
 EOF
 
+# Create storage class file
+cat > /home/${SUDOUSER}/storageclass.yml <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: azure
+provisioner: kubernetes.io/azure-disk
+parameters:
+  skuName: Standard_LRS  
+  location: $LOCATION  
+  storageAccount: $STORAGEACCOUNTNAME 
+EOF
+
 
 # Create Ansible Hosts File
 echo $(date) " - Create Ansible Hosts file"
@@ -473,6 +486,12 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+# Setup Default Storage Class
+name=azure
+default_storage_class=true
+provisioner='kubernetes.io/azure-disk'
+parameters='storageaccounttype: Standard_LRS\nkind: Shared'
 
 # Setup metrics
 openshift_master_metrics_public_url=https://hawkular-metrics.$ROUTING/hawkular/metrics
@@ -590,6 +609,12 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+# Setup Default Storage Class
+name=azure
+default_storage_class=true
+provisioner=kubernetes.io/azure-disk
+parameters='storageaccounttype: Standard_LRS\nkind: Shared'
 
 # Setup metrics
 openshift_master_metrics_public_url=https://hawkular-metrics.$ROUTING/hawkular/metrics
