@@ -23,8 +23,9 @@
 				"Standard_DS11", "Standard_DS12", "Standard_DS13", "Standard_DS14",
 				"Standard_DS4_v2", "Standard_DS5_v2",
 				"Standard_DS11_v2", "Standard_DS12_v2", "Standard_DS13_v2", "Standard_DS14_v2",
-				"Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5"
-			],
+				"Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5",
+				"Standard_D2s_v3", "Standard_D4s_v3", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_D32s_v3", "Standard_D64s_v3"
+			],				
 			"metadata": {
 				"description": "OpenShift Master VM size"
 			}
@@ -43,7 +44,8 @@
 				"Standard_DS11", "Standard_DS12", "Standard_DS13", "Standard_DS14",
 				"Standard_DS2_v2", "Standard_DS3_v2", "Standard_DS4_v2", "Standard_DS5_v2",
 				"Standard_DS11_v2", "Standard_DS12_v2", "Standard_DS13_v2", "Standard_DS14_v2",
-				"Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5"
+				"Standard_GS1", "Standard_GS2", "Standard_GS3", "Standard_GS4", "Standard_GS5",
+				"Standard_D2s_v3", "Standard_D4s_v3", "Standard_D8s_v3", "Standard_D16s_v3", "Standard_D32s_v3", "Standard_D64s_v3"				
 			],
 			"metadata": {
 				"description": "OpenShift Node VM(s) size"
@@ -212,17 +214,11 @@
 			"metadata": {
 				"description": "Azure Subscription ID"
 			}
-		},
-		"resourceGroup": {
-			"type": "string",
-			"minLength": 1,
-			"metadata": {
-				"description": "Azure Resource Group Name"
-			}
 		}
 	},
 	"variables": {
 		"location": "[resourceGroup().location]",
+		"resourceGroupName": "[resourceGroup().name]",
 		"apiVersionCompute": "2015-06-15",
 		"apiVersionNetwork": "2016-03-30",
 		"apiVersionStorage": "2015-06-15",
@@ -1476,7 +1472,7 @@
 						"value": "[parameters('subscriptionId')]"
 					},
 					"resourceGroup": {
-						"value": "[parameters('resourceGroup')]"
+						"value": "[variables('resourceGroupName')]"
 					},
 					"location": {
 						"value": "[variables('location')]"

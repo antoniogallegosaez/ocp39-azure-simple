@@ -79,9 +79,6 @@
 		},
 		"subscriptionId": {
 			"value": "YOURAZURESUBSCRIPTIONID"
-		},
-		"resourceGroup": {
-			"value": "YOURAZURERESOURCEGROUP"
 		}
 	}
 }
