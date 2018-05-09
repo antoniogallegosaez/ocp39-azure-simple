@@ -208,18 +208,17 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
     copy:
       dest: "{{ azure_conf }}"
       content: |
-          aadClientID: {{ g_aadClientId }}
-          aadClientSecret: {{ g_aadClientSecret }}
-          subscriptionID: {{ g_subscriptionId }}
-          tenantId: {{ g_tenantId }}
-          aadtenantId: {{ g_tenantId }}
-          resourceGroup: {{ g_resourceGroup }}
-          cloud: {{ g_cloud }}
-          location: {{ g_location }}
-          vnetName: {{ g_vnetName }}
-          securityGroupName: {{ g_securityGroupName }}
-          primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}
-        } 
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        cloud: {{ g_cloud }}
+        location: {{ g_location }}
+        vnetName: {{ g_vnetName }}
+        securityGroupName: {{ g_securityGroupName }}
+        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}
     notify:
     - restart atomic-openshift-master-controllers
     - restart atomic-openshift-master-api
@@ -268,19 +267,17 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
     copy:
       dest: "{{ azure_conf }}"
       content: |
-        {
-          aadClientID: {{ g_aadClientId }}
-          aadClientSecret: {{ g_aadClientSecret }}
-          subscriptionID: {{ g_subscriptionId }}
-          tenantId: {{ g_tenantId }}
-          aadtenantId: {{ g_tenantId }}
-          resourceGroup: {{ g_resourceGroup }}
-          cloud: {{ g_cloud }}
-          location: {{ g_location }}
-          vnetName: {{ g_vnetName }}
-          securityGroupName: {{ g_securityGroupName }}
-          primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}     
-        } 
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        cloud: {{ g_cloud }}
+        location: {{ g_location }}
+        vnetName: {{ g_vnetName }}
+        securityGroupName: {{ g_securityGroupName }}
+        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}     
     notify:
     - restart atomic-openshift-node
   - name: insert the azure disk config into the node
@@ -334,19 +331,17 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
     copy:
       dest: "{{ azure_conf }}"
       content: |
-        {
-          aadClientID: {{ g_aadClientId }}
-          aadClientSecret: {{ g_aadClientSecret }}
-          subscriptionID: {{ g_subscriptionId }}
-          tenantId: {{ g_tenantId }}
-          aadtenantId: {{ g_tenantId }}
-          resourceGroup: {{ g_resourceGroup }}
-          cloud: {{ g_cloud }}
-          location: {{ g_location }}
-          vnetName: {{ g_vnetName }}
-          securityGroupName: {{ g_securityGroupName }}
-          primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}    
-        } 
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        cloud: {{ g_cloud }}
+        location: {{ g_location }}
+        vnetName: {{ g_vnetName }}
+        securityGroupName: {{ g_securityGroupName }}
+        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}    
     notify:
     - restart atomic-openshift-master-api
     - restart atomic-openshift-master-controllers
@@ -395,19 +390,17 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
     copy:
       dest: "{{ azure_conf }}"
       content: |
-        {
-          aadClientID: {{ g_aadClientId }}
-          aadClientSecret: {{ g_aadClientSecret }}
-          subscriptionID: {{ g_subscriptionId }}
-          tenantId: {{ g_tenantId }}
-          aadtenantId: {{ g_tenantId }}
-          resourceGroup: {{ g_resourceGroup }}
-          cloud: {{ g_cloud }}
-          location: {{ g_location }}
-          vnetName: {{ g_vnetName }}
-          securityGroupName: {{ g_securityGroupName }}
-          primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}
-        } 
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        cloud: {{ g_cloud }}
+        location: {{ g_location }}
+        vnetName: {{ g_vnetName }}
+        securityGroupName: {{ g_securityGroupName }}
+        primaryAvailabilitySetName: {{ g_primaryAvailabilitySetName }}
     notify:
     - restart atomic-openshift-node
   - name: insert the azure disk config into the node
