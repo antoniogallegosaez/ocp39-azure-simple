@@ -157,6 +157,248 @@ cat > /home/${SUDOUSER}/postinstall4.yml <<EOF
       mode: 0644
 EOF
 
+# Create vars.yml file for use by setup-azure-config.yml playbook
+
+cat > /home/${SUDOUSER}/vars.yml <<EOF
+g_tenantId: $TENANTID
+g_subscriptionId: $SUBSCRIPTIONID
+g_aadClientId: $AADCLIENTID
+g_aadClientSecret: $AADCLIENTSECRET
+g_resourceGroup: $RESOURCEGROUP
+g_location: $LOCATION
+g_vnetName: $VNETNAME
+EOF
+
+# Create Azure Cloud Provider configuration Playbook for Single Master Cluster
+
+cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
+#!/usr/bin/ansible-playbook 
+- hosts: masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    master_conf: /etc/origin/master/master-config.yaml
+  handlers:
+  - name: restart atomic-openshift-master-controllers
+    systemd:
+      state: restarted
+      name: atomic-openshift-master-controllers
+  - name: restart atomic-openshift-master-api
+    systemd:
+      state: restarted
+      name: atomic-openshift-master-api      
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        location: {{ g_location }}
+    notify:
+    - restart atomic-openshift-master-controllers
+    - restart atomic-openshift-master-api
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the master
+    modify_yaml:
+      dest: "{{ master_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
+      value:
+      - "azure"
+    - key: kubernetesMasterConfig.controllerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.controllerArguments.cloud-provider
+      value:
+      - "azure"
+    notify:
+    - restart atomic-openshift-master-controllers
+    - restart atomic-openshift-master-api
+- hosts: nodes:!masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    node_conf: /etc/origin/node/node-config.yaml
+  handlers:
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        location: {{ g_location }}
+    notify:
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the node
+    modify_yaml:
+      dest: "{{ node_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubeletArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubeletArguments.cloud-provider
+      value:
+      - "azure"
+    notify:
+    - restart atomic-openshift-node
+EOF
+
+# Create Azure Cloud Provider configuration Playbook for Multi-Master Cluster
+
+cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
+#!/usr/bin/ansible-playbook 
+- hosts: masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    master_conf: /etc/origin/master/master-config.yaml
+  handlers:
+  - name: restart atomic-openshift-master-api
+    systemd:
+      state: restarted
+      name: atomic-openshift-master-api
+  - name: restart atomic-openshift-master-controllers
+    systemd:
+      state: restarted
+      name: atomic-openshift-master-controllers
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        location: {{ g_location }}
+    notify:
+    - restart atomic-openshift-master-api
+    - restart atomic-openshift-master-controllers
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the master
+    modify_yaml:
+      dest: "{{ master_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.apiServerArguments.cloud-provider
+      value:
+      - "azure"
+    - key: kubernetesMasterConfig.controllerArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubernetesMasterConfig.controllerArguments.cloud-provider
+      value:
+      - "azure"
+    notify:
+    - restart atomic-openshift-master-api
+    - restart atomic-openshift-master-controllers
+- hosts: nodes:!masters
+  gather_facts: no
+  vars_files:
+  - vars.yml
+  become: yes
+  vars:
+    azure_conf_dir: /etc/azure
+    azure_conf: "{{ azure_conf_dir }}/azure.conf"
+    node_conf: /etc/origin/node/node-config.yaml
+  handlers:
+  - name: restart atomic-openshift-node
+    systemd:
+      state: restarted
+      name: atomic-openshift-node
+  post_tasks:
+  - name: make sure /etc/azure exists
+    file:
+      state: directory
+      path: "{{ azure_conf_dir }}"
+  - name: populate /etc/azure/azure.conf
+    copy:
+      dest: "{{ azure_conf }}"
+      content: |
+        aadClientID: {{ g_aadClientId }}
+        aadClientSecret: {{ g_aadClientSecret }}
+        subscriptionID: {{ g_subscriptionId }}
+        tenantId: {{ g_tenantId }}
+        aadtenantId: {{ g_tenantId }}
+        resourceGroup: {{ g_resourceGroup }}
+        location: {{ g_location }}
+    notify:
+    - restart atomic-openshift-node
+  - name: insert the azure disk config into the node
+    modify_yaml:
+      dest: "{{ node_conf }}"
+      yaml_key: "{{ item.key }}"
+      yaml_value: "{{ item.value }}"
+    with_items:
+    - key: kubeletArguments.cloud-config
+      value:
+      - "{{ azure_conf }}"
+    - key: kubeletArguments.cloud-provider
+      value:
+      - "azure"
+    notify:
+    - restart atomic-openshift-node
+EOF
+
 # Create Ansible Hosts File
 echo $(date) " - Create Ansible Hosts file"
 
@@ -219,14 +461,7 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
-# Setup Azure Service Provider and Default Storage Class
-openshift_cloudprovider_kind=azure
-openshift_cloudprovider_azure_tenant_id=$TENANTID
-openshift_cloudprovider_azure_subscription_id=$SUBSCRIPTIONID
-openshift_cloudprovider_azure_client_id=$AADCLIENTID
-openshift_cloudprovider_azure_client_secret=$AADCLIENTSECRET
-openshift_cloudprovider_azure_resource_group=$RESOURCEGROUP
-openshift_cloudprovider_azure_location=$LOCATION
+# Setup Default Storage Class
 openshift_storageclass_name=azure
 openshift_storageclass_default=true
 openshift_storageclass_parameters='kubernetes.io/azure-disk'
@@ -349,14 +584,7 @@ openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 # Enable HTPasswdPasswordIdentityProvider
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 
-# Setup Azure Service Provider and Default Storage Class
-openshift_cloudprovider_kind=azure
-openshift_cloudprovider_azure_tenant_id=$TENANTID
-openshift_cloudprovider_azure_subscription_id=$SUBSCRIPTIONID
-openshift_cloudprovider_azure_client_id=$AADCLIENTID
-openshift_cloudprovider_azure_client_secret=$AADCLIENTSECRET
-openshift_cloudprovider_azure_resource_group=$RESOURCEGROUP
-openshift_cloudprovider_azure_location=$LOCATION
+# Setup Default Storage Class
 openshift_storageclass_name=azure
 openshift_storageclass_default=true
 openshift_storageclass_parameters='kubernetes.io/azure-disk'
@@ -486,6 +714,16 @@ runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/p
 
 echo $(date) " - Running install playbook"
 runuser -l $SUDOUSER -c "ansible-playbook /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml"
+
+# Execute setup-azure-config playbook to configure Azure Cloud Provider
+echo $(date) "- Configuring OpenShift Cloud Provider to be Azure"
+
+if [ $MASTERCOUNT -eq 1 ]
+then
+   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-single-master.yml"
+else
+   runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-multiple-master.yml"
+fi
 
 # Deploy metrics in case it's selected
 if [ $INSTALLMETRICS = "true" ]
