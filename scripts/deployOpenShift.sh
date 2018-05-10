@@ -510,19 +510,19 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 
 # host group for masters
 [masters]
-$MASTER-0.$DOMAIN
+$MASTER-0
 
 [etcd]
-$MASTER-0.$DOMAIN
+$MASTER-0
 
 # host group for nodes
 [nodes]
-$MASTER-0.$DOMAIN openshift_hostname=$MASTER-0 openshift_node_labels="{'region': 'master', 'zone': 'default'}"
+$MASTER-0 openshift_hostname=$MASTER-0 openshift_node_labels="{'region': 'master', 'zone': 'default'}"
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
-$INFRA-0.$DOMAIN openshift_hostname=$INFRA-0 openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
+$INFRA-0 openshift_hostname=$INFRA-0 openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
 EOF
 for node in ocpn-{0..30}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpn >>/etc/ansible/hosts
 
 else
@@ -648,7 +648,7 @@ done|grep ocpm >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
 [firstmaster]
-$MASTER-0.$DOMAIN
+$MASTER-0
 
 [lb]
 $BASTION
@@ -657,14 +657,14 @@ $BASTION
 [nodes]
 EOF
 for node in ocpm-{0..3}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
 done|grep ocpm >>/etc/ansible/hosts
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
 for node in ocpi-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpi >>/etc/ansible/hosts
 for node in ocpn-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }') openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep ocpn >>/etc/ansible/hosts
 fi
 
