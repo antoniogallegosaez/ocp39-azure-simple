@@ -28,23 +28,43 @@ INSTALLMETRICS=${20}
 INSTALLLOGGING=${21}
 INSTALLPROMETHEUS=${22}
 INSTALLSERVICEBROKERS=${23}
-
-MASTERLOOP=$((MASTERCOUNT - 1))
-NODELOOP=$((NODECOUNT - 1))
+SERVICEPRINCIPALURL=${24}
 
 DOMAIN=$( awk 'NR==2' /etc/resolv.conf | awk '{ print $2 }' )
 
-echo $PASSWORD
+echo $(date) " - Fixing internal DNS names"
+
+# Install Azure client
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+sh -c 'echo -e "[azure-cli]\nname=Azure CLI\nbaseurl=https://packages.microsoft.com/yumrepos/azure-cli\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
+yum install azure-cli -y
+
+# Login using VM's system identity
+az login --service-principal -u $SERVICEPRINCIPALURL -p $AADCLIENTSECRET --tenant $TENANTID
+
+# Fix the internal DNS names
+MASTERLOOP=$((MASTERCOUNT - 1))
+NODELOOP=$((NODECOUNT - 1))
+
+for (( c=0; c<=$MASTERLOOP; c++)); do
+  az network nic update -g $RESOURCEGROUP -n ocpm${c}nic --internal-dns-name ocpm-$c
+done
+
+for (( c=0; c<=$MASTERLOOP; c++)); do
+    az network nic update -g $RESOURCEGROUP -n ocpi${c}nic --internal-dns-name ocpi-$c
+done
+
+for (( c=0; c<=$NODELOOP; c++)); do
+    az network nic update -g $RESOURCEGROUP -n ocpn${c}nic --internal-dns-name ocpn-$c
+done
+
 
 # Generate private keys for use by Ansible
 echo $(date) " - Generating Private keys for use by Ansible for OpenShift Installation"
-
-echo "Generating Private Keys"
-
 runuser -l $SUDOUSER -c "echo \"$PRIVATEKEY\" > ~/.ssh/id_rsa"
 runuser -l $SUDOUSER -c "chmod 600 ~/.ssh/id_rsa*"
 
-
+echo $(date) " - Generating Ansible config file"
 # Create ansible config file
 cat > /etc/ansible/ansible.cfg <<EOF
 [defaults]
@@ -191,10 +211,6 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
     systemd:
       state: restarted
       name: atomic-openshift-master-api      
-  - name: restart atomic-openshift-node
-    systemd:
-      state: restarted
-      name: atomic-openshift-node
   post_tasks:
   - name: make sure /etc/azure exists
     file:
@@ -214,7 +230,6 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
     notify:
     - restart atomic-openshift-master-controllers
     - restart atomic-openshift-master-api
-    - restart atomic-openshift-node
   - name: insert the azure disk config into the master
     modify_yaml:
       dest: "{{ master_conf }}"
@@ -236,7 +251,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
     notify:
     - restart atomic-openshift-master-controllers
     - restart atomic-openshift-master-api
-- hosts: nodes:!masters
+- hosts: nodes
   gather_facts: no
   vars_files:
   - vars.yml
@@ -266,8 +281,6 @@ cat > /home/${SUDOUSER}/setup-azure-config-single-master.yml <<EOF
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
         location: {{ g_location }}
-    notify:
-    - restart atomic-openshift-node
   - name: insert the azure disk config into the node
     modify_yaml:
       dest: "{{ node_conf }}"
@@ -306,10 +319,6 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
     systemd:
       state: restarted
       name: atomic-openshift-master-controllers
-  - name: restart atomic-openshift-node
-    systemd:
-      state: restarted
-      name: atomic-openshift-node
   post_tasks:
   - name: make sure /etc/azure exists
     file:
@@ -326,10 +335,6 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
         location: {{ g_location }}
-    notify:
-    - restart atomic-openshift-master-api
-    - restart atomic-openshift-master-controllers
-    - restart atomic-openshift-node
   - name: insert the azure disk config into the master
     modify_yaml:
       dest: "{{ master_conf }}"
@@ -351,7 +356,7 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
     notify:
     - restart atomic-openshift-master-api
     - restart atomic-openshift-master-controllers
-- hosts: nodes:!masters
+- hosts: nodes
   gather_facts: no
   vars_files:
   - vars.yml
@@ -381,8 +386,6 @@ cat > /home/${SUDOUSER}/setup-azure-config-multiple-master.yml <<EOF
         aadtenantId: {{ g_tenantId }}
         resourceGroup: {{ g_resourceGroup }}
         location: {{ g_location }}
-    notify:
-    - restart atomic-openshift-node
   - name: insert the azure disk config into the node
     modify_yaml:
       dest: "{{ node_conf }}"
@@ -479,7 +482,7 @@ openshift_metrics_cassandra_storage_type=dynamic
 
 # Setup logging
 openshift_master_logging_public_url=https://kibana.$ROUTING
-openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:8443
+openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME
 openshift_logging_use_ops=false
 openshift_logging_namespace=logging
 openshift_logging_install_logging=false
@@ -602,7 +605,7 @@ openshift_metrics_cassandra_storage_type=dynamic
 
 # Setup logging
 openshift_master_logging_public_url=https://kibana.$ROUTING
-openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME:8443
+openshift_logging_master_public_url=https://$MASTERPUBLICIPHOSTNAME
 openshift_logging_use_ops=false
 openshift_logging_namespace=logging
 openshift_logging_install_logging=false
@@ -668,6 +671,8 @@ for node in ocpn-{0..30}; do
 done|grep ocpn >>/etc/ansible/hosts
 fi
 
+echo $(date) " - Running preinstall tasks"
+
 # Create and distribute hosts file to all nodes, this is due to us having to use
 (
 echo "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4"
@@ -724,6 +729,9 @@ then
 else
    runuser -l $SUDOUSER -c "ansible-playbook ~/setup-azure-config-multiple-master.yml"
 fi
+
+# Wait until nodes are up and running again
+oc login $MASTERPUBLICIPHOSTNAME
 
 # Deploy metrics in case it's selected
 if [ $INSTALLMETRICS = "true" ]

@@ -109,6 +109,13 @@
 				"description": "SSH private key for deploying OpenShift"
 			}
 		},
+		"servicePrincipalURL": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure AD Service Principal URL"
+			}
+		},		
 		"aadClientId": {
 			"type": "string",
 			"minLength": 1,
@@ -218,7 +225,7 @@
 				]
 			},
 			"protectedSettings": {
-				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('location'), '\" \"', parameters('virtualNetworkName'), '\" \"', parameters('storageAccountName'), '\" \"', parameters('installMetrics'), '\" \"', parameters('installLogging'), '\" \"', parameters('installPrometheus'), '\" \"', parameters('installServiceBrokers'), '\"')]"
+				"commandToExecute": "[concat('bash ', variables('openshiftDeploymentScriptFileName'), ' \"', parameters('adminUsername'), '\" ', variables('singlequote'), parameters('openshiftPassword'), variables('singlequote'), ' \"', parameters('sshPrivateKey'), '\" \"', parameters('openshiftMasterHostname'), '\" \"', parameters('openshiftMasterPublicIpFqdn'), '\" \"', parameters('openshiftMasterPublicIpAddress'), '\" \"', parameters('openshiftInfraHostname'), '\" \"', parameters('openshiftNodeHostname'), '\" \"', parameters('nodeInstanceCount'), '\" \"', parameters('MasterInstanceCount'), '\" \"', parameters('customDomain'), '\" \"', parameters('aadClientId'), '\" \"', parameters('aadClientSecret'), '\" \"', parameters('tenantId'), '\" \"', parameters('subscriptionId'), '\" \"', parameters('resourceGroup'), '\" \"', parameters('location'), '\" \"', parameters('virtualNetworkName'), '\" \"', parameters('storageAccountName'), '\" \"', parameters('installMetrics'), '\" \"', parameters('installLogging'), '\" \"', parameters('installPrometheus'), '\" \"', parameters('installServiceBrokers'), '\" \"', parameters('servicePrincipalURL'), '\"')]"
 			}
 		}
 	}],

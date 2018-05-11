@@ -8,7 +8,7 @@
 				"description": "Base URL for Template Files",
 				"artifactsBaseUrl": ""
 			},
-			"defaultValue": "https://raw.githubusercontent.com/antoniogallegosaez/ocp39-azure-simple/master/"
+			"defaultValue": "http://gogs.apps.openshift.pub/ages/ocp39-azure-ages/raw/master/"
 		},
 		"masterVmSize": {
 			"type": "string",
@@ -183,6 +183,13 @@
 				"description": "Default Subdomain for application routing (Wildcard DNS) - must enter something even if you are using xip.io"
 			}
 		},
+		"servicePrincipalURL": {
+			"type": "string",
+			"minLength": 1,
+			"metadata": {
+				"description": "Azure Service Principal URL"
+			}
+		},		
 		"aadClientId": {
 			"type": "string",
 			"minLength": 1,
@@ -268,7 +275,7 @@
 		"masterLbFrontEndConfigId": "[concat(variables('masterLbId'), '/frontendIPConfigurations/loadBalancerFrontEnd')]",
 		"masterLbBackendPoolId": "[concat(variables('masterLbId'),'/backendAddressPools/loadBalancerBackend')]",
 		"masterLbHttpProbeId": "[concat(variables('masterLbId'),'/probes/httpProbe')]",
-		"masterLb8443ProbeId": "[concat(variables('masterLbId'),'/probes/8443Probe')]",
+		"masterLb443ProbeId": "[concat(variables('masterLbId'),'/probes/443Probe')]",
 		"masterLbCockpitProbeId": "[concat(variables('masterLbId'),'/probes/cockpitProbe')]",
 		
 		"infraLoadBalancerName": "[concat(variables('openshiftInfraHostname'), 'lb')]",
@@ -518,7 +525,7 @@
 						"description": "Allow OpenShift Console connections from all locations",
 						"protocol": "Tcp",
 						"sourcePortRange": "*",
-						"destinationPortRange": "8443",
+						"destinationPortRange": "443",
 						"sourceAddressPrefix": "*",
 						"destinationAddressPrefix": "*",
 						"access": "Allow",
@@ -800,10 +807,10 @@
 						"protocol": "Tcp",
 						"loadDistribution": "SourceIP",
 						"idleTimeoutInMinutes": 30,
-						"frontendPort": 8443,
-						"backendPort": 8443,
+						"frontendPort": 443,
+						"backendPort": 443,
 						"probe": {
-							"id": "[variables('masterLb8443ProbeId')]"
+							"id": "[variables('masterLb443ProbeId')]"
 						}
 					}
 				}, {
@@ -826,10 +833,10 @@
 					}
 				}],
 				"probes": [{
-					"name": "8443Probe",
+					"name": "443Probe",
 					"properties": {
 						"protocol": "Tcp",
-						"port": 8443,
+						"port": 443,
 						"intervalInSeconds": 5,
 						"numberOfProbes": 2
 					}
@@ -1483,6 +1490,9 @@
 							"secretName": "[parameters('keyVaultSecret')]"
 						}
 					},
+					"servicePrincipalURL": {
+						"value": "[parameters('servicePrincipalURL')]"
+					},					
 					"aadClientId": {
 						"value": "[parameters('aadClientId')]"
 					},
@@ -1526,7 +1536,7 @@
 	"outputs": {
 		"openshiftConsoleUrl": {
 			"type": "string",
-			"value": "[concat('https://', reference(parameters('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn, ':8443/console')]"
+			"value": "[concat('https://', reference(parameters('openshiftMasterPublicIpDnsLabel')).dnsSettings.fqdn, '/console')]"
 		},
 		"openshiftMasterSsh": {
 			"type": "string",

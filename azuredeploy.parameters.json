@@ -65,6 +65,9 @@
 		"defaultSubDomain": {
 			"value": "YOURAPPSSUBDOMAIN"
 		},
+		"servicePrincipalURL": {
+			"value": "YOURSERVICEPRINCIPALURL"
+		},		
 		"aadClientId": {
 			"value": "YOURAZURECLIENTID"
 		},

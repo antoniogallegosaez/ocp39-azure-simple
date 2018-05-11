@@ -3,7 +3,7 @@
 #It reads the content of provided parameters.json file and applies the fix based on its content
 #Run this script from a host with jq installed and also with AZ cli v2+, login into Azure account and be able to perform az commands
 
-if [ $# -eq 0 ]; then
+if [ $# -ne 2 ]; then
     echo "Usage: ./fix_internal_dns_names.sh yourazuredeploy.parameters.json yourresourcegroup"
     exit 1
 fi

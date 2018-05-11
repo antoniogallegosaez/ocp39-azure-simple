@@ -172,7 +172,7 @@ azure group deployment create --name ${GROUP} --template-file azuredeploy.json -
 
 echo
 echo "Deployment initiated. Allow 40-50 minutes for a deployment to succeed."
-echo "The cluster will be reachable at https://$MASTER_DNS.${LOCATION}.cloudapp.azure.com:8443"
+echo "The cluster will be reachable at https://$MASTER_DNS.${LOCATION}.cloudapp.azure.com"
 echo
 echo "Waiting for Bastion host IP to get allocated."
 

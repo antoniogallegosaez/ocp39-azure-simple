@@ -120,6 +120,6 @@ yum -y update --exclude=WALinuxAgent
 # Install OpenShift utilities
 echo $(date) " - Installing OpenShift utilities"
 
-yum -y install atomic-openshift-utils
+yum -y install atomic-openshift-utils atomic-openshift-clients
 
 echo $(date) " - Script Complete"

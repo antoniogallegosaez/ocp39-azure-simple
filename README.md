@@ -3,33 +3,7 @@
 Deploy an automated installation of OpenShift Container Platform 3.9 in HA or non-HA setup.
 With CRI-O and Prometheus out of the box.
 
-Based on work at https://github.com/haroldwongms/openshift-containerplatform
-
-## To deploy a cluster with a one-liner using deploy.sh
-
-The script will run on a Linux server or on MacOS. Possibly it will run in a bash shell in Windows 10.
-
-1. Install the Azure CLI 1.0: https://docs.microsoft.com/en-us/azure/cli-install-nodejs
-
-2. Login using the Azure CLI:
-
-$ azure login myuser@domain.suffix
-
-3. If this is the first time you run the Azure CLI, you may have to run this command:
-
-$ azure provider register --namespace "Microsoft.KeyVault"
-
-4. Download the repository:
-
-$ git clone https://github.com/mglantz/ocp39-azure-simple
-
-5. Edit deploy.cfg
-
-6. Run the deployment script to install an OpenShift cluster on Azure. Pass the name of your Azure resource group in which you want to put the OpenShift cluster, as an argument.
-
-$ sh ./deploy.sh myocpdemo
-
-7. Wait for the deployment to complete. Check out the resource group in https://portal.azure.com and wait for it to say "2 Succeeded" under Deployments.
+Based on work at https://github.com/haroldwongms/openshift-containerplatform and at https://github.com/mglantz/ocp39-azure-simple
 
 ## READ the instructions in its entirety before deploying via the deployment button below!
 
@@ -42,7 +16,7 @@ This template deploys OpenShift Container Platform with basic username / passwor
 |Resource           	|Properties                                                                                                                          |
 |-----------------------|------------------------------------------------------------------------------------------------------------------------------------|
 |Virtual Network   		|**Address prefix:** 192.168.0.0/16<br />**Master subnet:** 192.168.1.0/24<br />**Node subnet:** 192.168.2.0/24                      |
-|Master Load Balancer	|2 probes and 2 rules for TCP 8443 and TCP 9090 <br/> NAT rules for SSH on Ports 2200-220X                                           |
+|Master Load Balancer	|2 probes and 2 rules for TCP 443 and TCP 9090 <br/> NAT rules for SSH on Ports 2200-220X                                           |
 |Infra Load Balancer	|3 probes and 3 rules for TCP 80, TCP 443 and TCP 9090 									                                             |
 |Public IP Addresses	|Bastion Public IP for Bastion Node<br />OpenShift Master public IP attached Master Load Balancer<br />OpenShift Router public IP attached to Infra Load Balancer            |
 |Storage Accounts   	|2 Storage Accounts                                                                                                                  |
@@ -106,16 +80,6 @@ You will also need to get the Pool ID that contains your entitlements for OpenSh
 19. defaultSubDomainType: This will either be xipio (if you don't have your own domain) or custom if you have your own domain that you would like to use for routing
 20. defaultSubDomain: The wildcard DNS name you would like to use for routing if you selected custom above.  If you selected xipio above, you must still enter something here but it will not be used
 
-## Deploy Template
-
-Deploy to Azure using Azure Portal: 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmglantz%2Focp36-azure-simple%2Fmaster%2Fazuredeploy.json" target="_blank"><img src="http://azuredeploy.net/deploybutton.png"/></a>
-<a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fharoldwongms%2Focp36-azure-simple%2Fmaster%2Fazuredeploy.json" target="_blank">
-    <img src="http://armviz.io/visualizebutton.png"/>
-</a><br/>
-
-Once you have collected all of the prerequisites for the template, you can deploy the template by clicking Deploy to Azure or populating the *azuredeploy.parameters.json* file and executing Resource Manager deployment commands with PowerShell or the Azure CLI.
-
 ### NOTE
 
 The OpenShift Ansible playbook does take a while to run when using VMs backed by Standard Storage. VMs backed by Premium Storage are faster. If you want Premium Storage, select a DS or GS series VM.
@@ -137,7 +101,7 @@ You should see a folder named '0' and '1'.  In each of these folders, you will s
 
 ### Metrics and logging
 
-To display metrics and logs, you need to logon to OpenShift ( https://publicDNSname:8443 ) go into the logging project, click on the Kubana route and accept the SSL exception in your brower, then do the same with the Hawkster metrics route in the openshift-infra project.
+To display metrics and logs, you need to logon to OpenShift ( https://publicDNSname ) go into the logging project, click on the Kubana route and accept the SSL exception in your brower, then do the same with the Hawkster metrics route in the openshift-infra project.
 
 ### Creation of additional users
 
@@ -150,4 +114,4 @@ Use user 'root' and the same password as you assigned to your OpenShift admin to
    
 ### Additional OpenShift Configuration Options
  
-You can configure additional settings per the official (<a href="https://docs.openshift.com/container-platform/3.6/welcome/index.html" target="_blank">OpenShift Enterprise Documentation</a>).
+You can configure additional settings per the official (<a href="https://docs.openshift.com/container-platform/3.9/welcome/index.html" target="_blank">OpenShift Enterprise Documentation</a>).
