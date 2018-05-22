@@ -457,6 +457,10 @@ openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'imag
 # enable ntp on masters to ensure proper failover
 openshift_clock_enabled=true
 
+# Configure master API and console ports.
+openshift_master_api_port=443
+openshift_master_console_port=443
+
 openshift_master_cluster_hostname=$MASTERPUBLICIPHOSTNAME
 openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
 #openshift_master_cluster_public_vip=$MASTERPUBLICIPADDRESS
@@ -579,6 +583,10 @@ openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'imag
 # enable ntp on masters to ensure proper failover
 openshift_clock_enabled=true
 
+# Configure master API and console ports.
+openshift_master_api_port=443
+openshift_master_console_port=443
+
 openshift_master_cluster_method=native
 openshift_master_cluster_hostname=$BASTION
 openshift_master_cluster_public_hostname=$MASTERPUBLICIPHOSTNAME
@@ -697,7 +705,7 @@ runuser -l $SUDOUSER -c "ansible-playbook ~/preinstall.yml"
 
 # Prometheus bugfix: https://bugzilla.redhat.com/show_bug.cgi?id=1563494
 # ...Locally
-sed -i 's/v0.15.2/v3.9.25-1/g' /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml
+sed -i 's/v0.15.2/v3.9.27-1/g' /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml
 
 # ...On the masters
 if [ $MASTERCOUNT -ne 1 ]
