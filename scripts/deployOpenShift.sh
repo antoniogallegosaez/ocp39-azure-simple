@@ -531,7 +531,7 @@ $MASTER-0 openshift_hostname=$MASTER-0 openshift_node_labels="{'region': 'master
 $INFRA-0 openshift_hostname=$INFRA-0 openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
 EOF
 for node in $NODE-{0..30}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep $NODE|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep $NODE >>/etc/ansible/hosts
 
 else
@@ -648,7 +648,7 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 [masters]
 EOF
 for node in $MASTER-{0..3}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
+	ping -c 1 $node 2>/dev/null|grep $MASTER|grep PING|awk '{ print $2 }'
 done|grep $MASTER >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
@@ -656,7 +656,7 @@ cat >> /etc/ansible/hosts <<EOF
 [etcd]
 EOF
 for node in $MASTER-{0..3}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
+	ping -c 1 $node 2>/dev/null|grep $MASTER|grep PING|awk '{ print $2 }'
 done|grep $MASTER >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
@@ -670,14 +670,14 @@ $BASTION
 [nodes]
 EOF
 for node in $MASTER-{0..3}; do
-	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
+	echo $(ping -c 1 $node 2>/dev/null|grep $MASTER|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep $MASTER|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
 done|grep $MASTER >>/etc/ansible/hosts
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
 for node in $INFRA-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep $INFRA|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep $INFRA|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep $INFRA >>/etc/ansible/hosts
 for node in $NODE-{0..30}; do
-        echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
+        echo $(ping -c 1 $node 2>/dev/null|grep $NODE|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep $NODE|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
 done|grep $NODE >>/etc/ansible/hosts
 fi
 
@@ -688,15 +688,15 @@ echo $(date) " - Running preinstall tasks"
 echo "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4"
 echo "::1         localhost localhost.localdomain localhost6 localhost6.localdomain6"
 for node in $MASTER-0 $MASTER-1 $MASTER-2; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//'i -e "s/.net/.net $node/"
+	ping -c 1 $node 2>/dev/null|grep $MASTER|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//'i -e "s/.net/.net $node/"
 done
 
 for node in $INFRA-{0..5}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//' -e "s/.net/.net $node/"
+	ping -c 1 $node 2>/dev/null|grep $INFRA|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//' -e "s/.net/.net $node/"
 done
 
 for node in $NODE-{0..30}; do
-	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//' -e "s/.net/.net $node/"
+	ping -c 1 $node 2>/dev/null|grep $NODE|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//' -e "s/.net/.net $node/"
 done
 ) >/tmp/hosts
 
