@@ -42,20 +42,22 @@ yum install azure-cli -y
 # Login using VM's system identity
 az login --service-principal -u $SERVICEPRINCIPALURL -p $AADCLIENTSECRET --tenant $TENANTID
 
+az account set -s $SUBSCRIPTIONID
+
 # Fix the internal DNS names
 MASTERLOOP=$((MASTERCOUNT - 1))
 NODELOOP=$((NODECOUNT - 1))
 
 for (( c=0; c<=$MASTERLOOP; c++)); do
-  az network nic update -g $RESOURCEGROUP -n ocpm${c}nic --internal-dns-name ocpm-$c
+  az network nic update -g $RESOURCEGROUP -n $MASTER${c}nic --internal-dns-name $MASTER-$c
 done
 
 for (( c=0; c<=$MASTERLOOP; c++)); do
-    az network nic update -g $RESOURCEGROUP -n ocpi${c}nic --internal-dns-name ocpi-$c
+    az network nic update -g $RESOURCEGROUP -n $INFRA${c}nic --internal-dns-name $INFRA-$c
 done
 
 for (( c=0; c<=$NODELOOP; c++)); do
-    az network nic update -g $RESOURCEGROUP -n ocpn${c}nic --internal-dns-name ocpn-$c
+    az network nic update -g $RESOURCEGROUP -n $NODE${c}nic --internal-dns-name $NODE-$c
 done
 
 
@@ -528,9 +530,9 @@ $MASTER-0 openshift_hostname=$MASTER-0 openshift_node_labels="{'region': 'master
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
 $INFRA-0 openshift_hostname=$INFRA-0 openshift_node_labels="{'region': 'infra', 'zone': 'default', 'runtime': 'cri-o'}"
 EOF
-for node in ocpn-{0..30}; do
+for node in $NODE-{0..30}; do
 	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
-done|grep ocpn >>/etc/ansible/hosts
+done|grep $NODE >>/etc/ansible/hosts
 
 else
 
@@ -645,17 +647,17 @@ openshift_hosted_etcd_storage_labels={'storage': 'etcd'}
 # host group for masters
 [masters]
 EOF
-for node in ocpm-{0..3}; do
+for node in $MASTER-{0..3}; do
 	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
-done|grep ocpm >>/etc/ansible/hosts
+done|grep $MASTER >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
 # host group for etcd
 [etcd]
 EOF
-for node in ocpm-{0..3}; do
+for node in $MASTER-{0..3}; do
 	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'
-done|grep ocpm >>/etc/ansible/hosts
+done|grep $MASTER >>/etc/ansible/hosts
 
 cat >> /etc/ansible/hosts <<EOF
 [firstmaster]
@@ -667,16 +669,16 @@ $BASTION
 # host group for nodes
 [nodes]
 EOF
-for node in ocpm-{0..3}; do
+for node in $MASTER-{0..3}; do
 	echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'master\', \'zone\': \'default\'}\"
-done|grep ocpm >>/etc/ansible/hosts
+done|grep $MASTER >>/etc/ansible/hosts
 # runtime: cri-o is a fix for https://bugzilla.redhat.com/show_bug.cgi?id=1553452
-for node in ocpi-{0..30}; do
+for node in $INFRA-{0..30}; do
         echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'infra\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
-done|grep ocpi >>/etc/ansible/hosts
-for node in ocpn-{0..30}; do
+done|grep $INFRA >>/etc/ansible/hosts
+for node in $NODE-{0..30}; do
         echo $(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_hostname=$(ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $2 }'|cut -d"." -f1) openshift_node_labels=\"{\'region\': \'nodes\', \'zone\': \'default\', \'runtime\': \'cri-o\'}\"
-done|grep ocpn >>/etc/ansible/hosts
+done|grep $NODE >>/etc/ansible/hosts
 fi
 
 echo $(date) " - Running preinstall tasks"
@@ -685,15 +687,15 @@ echo $(date) " - Running preinstall tasks"
 (
 echo "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4"
 echo "::1         localhost localhost.localdomain localhost6 localhost6.localdomain6"
-for node in ocpm-0 ocpm-1 ocpm-2; do
+for node in $MASTER-0 $MASTER-1 $MASTER-2; do
 	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//'i -e "s/.net/.net $node/"
 done
 
-for node in ocpi-{0..5}; do
+for node in $INFRA-{0..5}; do
 	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//' -e "s/.net/.net $node/"
 done
 
-for node in ocpn-{0..30}; do
+for node in $NODE-{0..30}; do
 	ping -c 1 $node 2>/dev/null|grep ocp|grep PING|awk '{ print $3 " " $2  }'|sed -e 's/(//' -e 's/)//' -e "s/.net/.net $node/"
 done
 ) >/tmp/hosts
@@ -710,13 +712,13 @@ sed -i 's/v0.15.2/v3.9.27-1/g' /usr/share/ansible/openshift-ansible/roles/opensh
 # ...On the masters
 if [ $MASTERCOUNT -ne 1 ]
 then
-        for item in ocpm-0 ocpm-1 ocpm-2; do
+        for item in $MASTER-0 $MASTER-1 $MASTER-2; do
   	      # Prometheus bugfix: https://bugzilla.redhat.com/show_bug.cgi?id=1563494
               runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $item 'sudo sed -i \"s/v0.15.2/v3.9.25-1/g\" /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml'"
         done
 else
         # Prometheus bugfix: https://bugzilla.redhat.com/show_bug.cgi?id=1563494
-        runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo sed -i \"s/v0.15.2/v3.9.25-1/g\" /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml'"
+        runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $MASTER-0 'sudo sed -i \"s/v0.15.2/v3.9.25-1/g\" /usr/share/ansible/openshift-ansible/roles/openshift_prometheus/vars/openshift-enterprise.yml'"
 fi
 
 # Initiating installation of OpenShift Container Platform using Ansible Playbook
@@ -830,17 +832,17 @@ runuser -l $SUDOUSER -c "ansible-playbook ~/postinstall4.yml"
 # OPENSHIFT_DEFAULT_REGISTRY UNSET MAGIC
 if [ $MASTERCOUNT -ne 1 ]
 then
-	for item in ocpm-0 ocpm-1 ocpm-2; do
+	for item in $MASTER-0 $MASTER-1 $MASTER-2; do
 		runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $item 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-api'"
 		runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $item 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-controllers'"
 		runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $item 'sudo systemctl restart atomic-openshift-master-api'"
 		runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $item 'sudo systemctl restart atomic-openshift-master-controllers'"
 	done
 else
-	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-api'"
-	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-controllers'"
-	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo systemctl restart atomic-openshift-master-api'"
-	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ocpm-0 'sudo systemctl restart atomic-openshift-master-controllers'"
+	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $MASTER-0 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-api'"
+	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $MASTER-0 'sudo sed -i \"s/OPENSHIFT_DEFAULT_REGISTRY/#OPENSHIFT_DEFAULT_REGISTRY/g\" /etc/sysconfig/atomic-openshift-master-controllers'"
+	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $MASTER-0 'sudo systemctl restart atomic-openshift-master-api'"
+	runuser -l $SUDOUSER -c "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $MASTER-0 'sudo systemctl restart atomic-openshift-master-controllers'"
 fi
 
 echo $(date) " - Script complete"

@@ -8,7 +8,7 @@
 				"description": "Base URL for Template Files",
 				"artifactsBaseUrl": ""
 			},
-			"defaultValue": "http://gogs.apps.openshift.pub/ages/ocp39-azure-ages/raw/master/"
+			"defaultValue": "https://raw.githubusercontent.com/antoniogallegosaez/ocp39-azure-simple/master/"
 		},
 		"masterVmSize": {
 			"type": "string",
